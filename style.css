@@ -522,4 +522,45 @@ html, body {
   .alchemy-resources { padding: 4px 10px; gap: 6px; }
   .res-capsule { font-size: 0.78rem; }
   .bartending-body { flex-direction: column; }
+  .control-hints-pill { display: none; }
+}
+
+/* 底部操作指南微光膠囊 */
+.bottom-hud-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  pointer-events: none;
+}
+
+.control-hints-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(30, 22, 18, 0.78);
+  border: 1px solid rgba(246, 194, 62, 0.45);
+  border-radius: 20px;
+  padding: 6px 18px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  font-size: 0.76rem;
+  color: var(--text-parchment);
+  pointer-events: none;
+}
+
+.control-hints-pill kbd {
+  display: inline-block;
+  background: rgba(246, 194, 62, 0.25);
+  border: 1px solid rgba(246, 194, 62, 0.6);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 2px;
+}
+
+.hint-sep {
+  color: rgba(246, 194, 62, 0.5);
 }
