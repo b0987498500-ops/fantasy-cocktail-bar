@@ -1,0 +1,1211 @@
+/* =========================================================
+   奇幻調酒館 (Fantasy Bartender) - 核心樣式表
+   深色玻璃擬態 + 奇幻鍊金光效 + 響應式手機跨裝置適配
+   ========================================================= */
+
+:root {
+  --bg-main: #0c0e18;
+  --bg-gradient: radial-gradient(circle at 50% 20%, #1e1938 0%, #0d0f1a 70%, #07080d 100%);
+  --surface-glass: rgba(26, 29, 46, 0.72);
+  --surface-glass-border: rgba(255, 255, 255, 0.12);
+  --surface-hover: rgba(45, 50, 78, 0.85);
+
+  --accent-gold: #f9ca24;
+  --accent-gold-glow: rgba(249, 202, 36, 0.45);
+  --accent-magic: #a55eea;
+  --accent-magic-glow: rgba(165, 94, 234, 0.45);
+  --accent-cyan: #00d2d3;
+  --accent-cyan-glow: rgba(0, 210, 211, 0.4);
+  --accent-green: #2ecc71;
+  --accent-red: #ff4757;
+
+  --text-main: #f1f2f6;
+  --text-muted: #a4b0be;
+  
+  --font-display: 'Cinzel', serif;
+  --font-body: 'Noto Sans TC', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --transition-fast: 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-normal: 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-main);
+  background-image: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================== 迷霧與心跳警報遮罩 ================== */
+.mist-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 990;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  box-shadow: inset 0 0 120px 40px rgba(165, 94, 234, 0.55);
+}
+
+.mist-overlay.warning {
+  opacity: 0.7;
+  animation: mistPulse 1.4s infinite alternate ease-in-out;
+  box-shadow: inset 0 0 160px 70px rgba(255, 71, 87, 0.75);
+}
+
+.mist-overlay.extreme {
+  opacity: 0.95;
+  animation: mistPulseFast 0.8s infinite alternate ease-in-out;
+  box-shadow: inset 0 0 220px 110px rgba(220, 20, 60, 0.9);
+}
+
+@keyframes mistPulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.03); opacity: 0.85; }
+}
+
+@keyframes mistPulseFast {
+  0% { transform: scale(0.98); opacity: 0.75; }
+  100% { transform: scale(1.05); opacity: 1; }
+}
+
+.lost-alert-banner {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-150%);
+  background: rgba(255, 71, 87, 0.92);
+  border: 1px solid #ff6b81;
+  padding: 16px 24px;
+  border-radius: var(--radius-md);
+  color: #fff;
+  z-index: 999;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  max-width: 90%;
+}
+
+.lost-alert-banner.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.lost-icon {
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ================== 通用玻璃擬態卡片 ================== */
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--surface-glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.38);
+}
+
+/* ================== 頂部狀態列 ================== */
+.game-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(13, 15, 26, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--surface-glass-border);
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tavern-emblem {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px var(--accent-magic));
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #fff 30%, #dcdde1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.economy-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--surface-glass-border);
+  font-size: 0.88rem;
+  transition: transform var(--transition-fast);
+}
+
+.stat-pill.gold { border-color: rgba(249, 202, 36, 0.35); }
+.stat-pill.rep { border-color: rgba(165, 94, 234, 0.35); }
+.stat-pill.pts { border-color: rgba(0, 210, 211, 0.35); }
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.stat-val {
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--surface-glass-border);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all var(--transition-fast);
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+/* ================== 區域導航條 ================== */
+.zone-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(18, 21, 35, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 10px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(165, 94, 234, 0.3), rgba(0, 210, 211, 0.2));
+  border-color: rgba(165, 94, 234, 0.5);
+  box-shadow: 0 0 16px rgba(165, 94, 234, 0.3);
+}
+
+.nav-arrow {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* ================== 視口切換區域 ================== */
+.main-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+
+.zone-screen {
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 24px;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  overflow-y: auto;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.zone-screen.hidden-left {
+  display: none;
+  transform: translateX(-60px);
+  opacity: 0;
+}
+
+.zone-screen.hidden-right {
+  display: none;
+  transform: translateX(60px);
+  opacity: 0;
+}
+
+.zone-screen.active-zone {
+  display: block;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.zone-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.zone-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+  color: #fff;
+}
+
+.zone-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ================== 1. 市集區域 ================== */
+.market-shelves {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.market-item-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.market-item-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-gold);
+}
+
+.item-top {
+  display: flex;
+  gap: 12px;
+}
+
+.item-icon {
+  font-size: 2.2rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--surface-glass-border);
+}
+
+.item-details h4 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.item-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag-badge {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.item-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.item-stock {
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+}
+
+.item-price {
+  font-weight: 700;
+  color: var(--accent-gold);
+  font-size: 0.95rem;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.buy-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px var(--accent-gold-glow);
+}
+
+.buy-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ================== 2. 中央酒吧區域 ================== */
+.tavern-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.customer-card {
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(32, 28, 56, 0.75), rgba(20, 22, 38, 0.85));
+}
+
+.customer-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-avatar {
+  font-size: 3.5rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  border: 2px solid var(--accent-magic);
+  box-shadow: 0 0 20px var(--accent-magic-glow);
+}
+
+.customer-badge {
+  font-size: 0.75rem;
+  background: var(--accent-magic);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.customer-dialog {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.speech-bubble {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  position: relative;
+}
+
+.speech-bubble p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #eceff1;
+  margin-bottom: 8px;
+}
+
+.flavor-desire {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.desire-tag {
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.tag-sweet { background: rgba(255, 107, 129, 0.25); color: #ff6b81; border: 1px solid #ff6b81; }
+.tag-sour { background: rgba(254, 202, 87, 0.25); color: #feca57; border: 1px solid #feca57; }
+.tag-spirit { background: rgba(84, 160, 255, 0.25); color: #54a0ff; border: 1px solid #54a0ff; }
+.tag-magic { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
+.tag-spicy { background: rgba(255, 71, 87, 0.25); color: #ff4757; border: 1px solid #ff4757; }
+
+.action-btn {
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+}
+
+.action-btn.glow-primary {
+  background: linear-gradient(135deg, var(--accent-magic), #7d2ae8);
+  color: #fff;
+  box-shadow: 0 4px 18px var(--accent-magic-glow);
+}
+
+.action-btn.glow-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px var(--accent-magic-glow);
+}
+
+.action-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--surface-glass-border);
+  color: #fff;
+}
+
+.action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.action-btn.danger {
+  background: linear-gradient(135deg, #eb3b5a, #c0392b);
+  color: #fff;
+}
+
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bar-counter {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.counter-shelf {
+  text-align: center;
+  padding: 20px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.shelf-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.active-cocktail-stand {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-glass-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.empty-glass-hint .hint-icon {
+  font-size: 1.8rem;
+  opacity: 0.7;
+}
+
+.inventory-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.inv-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inv-chip {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--surface-glass-border);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ================== 3. 神祕森林區域 ================== */
+.forest-hud {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.distance-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.distance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.danger-badge {
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.danger-badge.safe { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+.danger-badge.warning { background: rgba(243, 156, 18, 0.25); color: #f39c12; border: 1px solid #f39c12; }
+.danger-badge.danger { background: rgba(231, 76, 60, 0.3); color: #e74c3c; border: 1px solid #e74c3c; animation: blink 1s infinite; }
+
+@keyframes blink { 50% { opacity: 0.5; } }
+
+.gauge-bar-bg {
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 7px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--surface-glass-border);
+}
+
+.gauge-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2ecc71 0%, #f39c12 55%, #e74c3c 90%);
+  border-radius: 7px;
+  transition: width var(--transition-normal);
+}
+
+.gauge-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.gauge-tips {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.forest-control-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.forest-control-actions .action-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+.action-btn.glow-green {
+  background: linear-gradient(135deg, #10ac84, #1dd1a1);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(16, 172, 132, 0.4);
+}
+
+.forest-encounters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.encounter-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+  background: rgba(20, 24, 38, 0.7);
+  transition: all var(--transition-fast);
+}
+
+.encounter-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-green);
+}
+
+.encounter-icon {
+  font-size: 2.6rem;
+  margin-bottom: 4px;
+}
+
+.encounter-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.encounter-rarity {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.rarity-rare { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
+.rarity-legend { background: rgba(249, 202, 36, 0.25); color: #f9ca24; border: 1px solid #f9ca24; }
+
+/* ================== 調酒工作台 MODAL ================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-backdrop.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 780px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 18px;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-icon {
+  font-size: 1.4rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.8rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.bartending-body {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.glass-visualization {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 0 auto;
+}
+
+.glass-frame {
+  position: relative;
+  width: 220px;
+  height: 340px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#cocktail-canvas {
+  width: 220px;
+  height: 340px;
+  display: block;
+}
+
+.glass-capacity-indicator {
+  position: absolute;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #fff;
+  border: 1px solid var(--surface-glass-border);
+}
+
+.current-flavors-hud {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.flavor-bar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.flavor-bar-item span {
+  width: 42px;
+}
+
+.mini-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mini-bar .fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-cyan);
+  transition: width 0.15s ease;
+}
+
+#hud-sweet { background: #ff6b81; }
+#hud-sour { background: #feca57; }
+#hud-spirit { background: #54a0ff; }
+#hud-magic { background: #a55eea; }
+#hud-spicy { background: #ff4757; }
+
+.mix-controls {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ctrl-subhead {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.ingredient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  max-height: 230px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ing-select-card {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.ing-select-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ing-select-card.selected {
+  border-color: var(--accent-magic);
+  background: rgba(165, 94, 234, 0.18);
+  box-shadow: 0 0 12px var(--accent-magic-glow);
+}
+
+.ing-select-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ing-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ing-count {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+}
+
+.ing-flavors {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.pour-action-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.pour-btn {
+  background: linear-gradient(135deg, #00b4db, #0083b0);
+  border: none;
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  touch-action: manipulation;
+}
+
+.pour-btn:active:not(:disabled),
+.pour-btn.pouring {
+  transform: scale(0.97);
+  box-shadow: 0 0 24px rgba(0, 180, 219, 0.8);
+  background: linear-gradient(135deg, #00d2d3, #54a0ff);
+}
+
+.pour-btn:disabled {
+  background: #2f3640;
+  color: #718093;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pour-tip {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.mix-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.mix-action-buttons .action-btn {
+  flex: 1;
+}
+
+/* ================== 結算彈窗 MODAL ================== */
+.result-box {
+  max-width: 520px;
+  text-align: center;
+  gap: 18px;
+}
+
+.fanfare-icon {
+  font-size: 2.6rem;
+  display: block;
+  margin-bottom: 6px;
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+#res-drink-name {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  color: #fff;
+  background: linear-gradient(135deg, #f9ca24, #f0932b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.drink-tier-badge {
+  font-size: 0.85rem;
+  background: rgba(249, 202, 36, 0.2);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.rating-breakdown {
+  display: flex;
+  justify-content: space-around;
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+}
+
+.rating-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.r-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.star-rating {
+  font-size: 0.95rem;
+}
+
+.npc-comment-bubble {
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.npc-avatar-small {
+  font-size: 2rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-magic);
+}
+
+.npc-comment-text strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--accent-magic);
+  margin-bottom: 2px;
+}
+
+.npc-comment-text p {
+  font-size: 0.9rem;
+  color: #dcdde1;
+  line-height: 1.4;
+}
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.reward-card {
+  padding: 12px 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--surface-glass-border);
+}
+
+.rw-icon { font-size: 1.3rem; }
+.rw-val { font-size: 1.15rem; font-weight: 800; color: #fff; }
+.rw-desc { font-size: 0.7rem; color: var(--text-muted); }
+
+.reward-card.gold .rw-val { color: var(--accent-gold); }
+.reward-card.rep .rw-val { color: var(--accent-magic); }
+.reward-card.pts .rw-val { color: var(--accent-cyan); }
+
+.full-width {
+  width: 100%;
+}
+
+/* ================== 圖鑑彈窗 ================== */
+.book-box {
+  max-width: 650px;
+}
+
+.book-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.recipe-card {
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recipe-card.locked {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+}
+
+.recipe-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.recipe-card-tags {
+  font-size: 0.72rem;
+  color: var(--accent-magic);
+}
+
+/* ================== 手機端 RWD 響應式微調 ================== */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 10px 12px;
+  }
+  .brand-title {
+    font-size: 1rem;
+  }
+  .stat-pill {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+  .zone-screen {
+    padding: 16px 12px;
+  }
+  .customer-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+  }
+  .customer-actions {
+    margin-top: 8px;
+  }
+  .bartending-body {
+    flex-direction: column;
+  }
+  .glass-visualization {
+    flex: auto;
+    width: 100%;
+  }
+}

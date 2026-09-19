@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>奇幻調酒館 (Fantasy Bartender) - 探索與經營</title>
+  <meta name="description" content="跳脫現實拘束的奇幻調酒師經營與探索冒險遊戲。自由混搭風味、經營夢幻吧台、探索迷霧森林尋找秘傳原料！">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 全螢幕迷霧警報遮罩（森林防迷路機制） -->
+  <div id="mist-overlay" class="mist-overlay"></div>
+  <div id="lost-alert-banner" class="lost-alert-banner">
+    <div class="lost-content">
+      <span class="lost-icon">⚠️ 迷失在迷霧中！</span>
+      <p>你在森林深處迷失了方向，魔力激盪將你強行遣返回酒吧，部分剛採集的原料在慌亂中遺失了...</p>
+    </div>
+  </div>
+
+  <!-- 頂部常駐資源狀態列 -->
+  <header class="game-header">
+    <div class="brand">
+      <span class="tavern-emblem">🍸</span>
+      <h1 class="brand-title">奇幻調酒館</h1>
+    </div>
+
+    <!-- 三元數值資源列 -->
+    <div class="economy-bar">
+      <div class="stat-pill gold" title="金幣：在市集購買原料與擴建">
+        <span class="stat-icon">🪙</span>
+        <span class="stat-label">金幣</span>
+        <span id="gold-display" class="stat-val">120</span>
+      </div>
+      <div class="stat-pill rep" title="聲望值：解鎖市集新商品與稀有顧客">
+        <span class="stat-icon">⭐</span>
+        <span class="stat-label">聲望</span>
+        <span id="rep-display" class="stat-val">15</span>
+      </div>
+      <div class="stat-pill pts" title="積分：調酒里程碑與解鎖天賦">
+        <span class="stat-icon">🔮</span>
+        <span class="stat-label">積分</span>
+        <span id="points-display" class="stat-val">0</span>
+      </div>
+    </div>
+
+    <!-- 輔助設定 -->
+    <div class="header-actions">
+      <button id="audio-toggle-btn" class="icon-btn" title="切換音效">🔊</button>
+      <button id="recipe-book-btn" class="icon-btn" title="已解鎖特調圖鑑">📖</button>
+    </div>
+  </header>
+
+  <!-- 區域導航快速切換列 -->
+  <nav class="zone-nav">
+    <button class="nav-btn" data-target="market" id="nav-market">
+      <span class="nav-arrow">◀</span> 🛒 星光市集
+    </button>
+    <button class="nav-btn active" data-target="tavern" id="nav-tavern">
+      🏠 奇幻吧台 (中心)
+    </button>
+    <button class="nav-btn" data-target="forest" id="nav-forest">
+      🌲 神祕森林 <span class="nav-arrow">▶</span>
+    </button>
+  </nav>
+
+  <!-- 主要三向視圖區域 -->
+  <main class="main-viewport">
+    
+    <!-- ==================== 1. 左側區域：星光市集 ==================== -->
+    <section id="zone-market" class="zone-screen hidden-left">
+      <div class="zone-header">
+        <h2>✨ 夜光繁華市集</h2>
+        <p class="zone-desc">消耗金幣採購常規基礎調飲原料與基底糖漿。聲望提升將解鎖更多特殊原料。</p>
+      </div>
+
+      <div class="market-shelves" id="market-shelves">
+        <!-- 由 JS 動態注入商品列表 -->
+      </div>
+    </section>
+
+    <!-- ==================== 2. 中央區域：玩家酒吧 ==================== -->
+    <section id="zone-tavern" class="zone-screen active-zone">
+      <div class="tavern-stage">
+
+        <!-- 吧台顧客席 -->
+        <div class="customer-area" id="customer-area">
+          <div class="customer-card glass-panel" id="customer-card">
+            <div class="customer-avatar-wrap">
+              <div class="customer-avatar" id="cust-avatar">🧝‍♀️</div>
+              <div class="customer-badge" id="cust-badge">精靈學者</div>
+            </div>
+            <div class="customer-dialog">
+              <div class="speech-bubble">
+                <p id="cust-dialog-text">「旅途勞頓，我想要一杯帶有<strong>甘甜</strong>微光的治癒之酒，若有些許<strong>魔幻</strong>層次更好...」</p>
+                <div class="flavor-desire" id="cust-desires">
+                  <span class="desire-tag tag-sweet">渴求：甘甜 +++</span>
+                  <span class="desire-tag tag-magic">渴求：魔幻 ++</span>
+                </div>
+              </div>
+              <div class="customer-actions">
+                <button id="open-bartender-btn" class="action-btn glow-primary">
+                  ✨ 為客人調製特飲
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 吧台全景與展示 -->
+        <div class="bar-counter glass-panel">
+          <div class="counter-shelf">
+            <div class="shelf-label">調酒大師工作桌</div>
+            <div class="active-cocktail-stand" id="cocktail-stand">
+              <div class="empty-glass-hint">
+                <span class="hint-icon">🍸</span>
+                <p>吧台已擦拭乾淨，隨時可發揮你的想像力！</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 快速庫存預覽列 -->
+          <div class="inventory-preview">
+            <span class="inv-title">🎒 吧台庫存：</span>
+            <div class="inv-chips" id="bar-inv-chips">
+              <!-- JS 動態生成 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. 右側區域：神祕森林 ==================== -->
+    <section id="zone-forest" class="zone-screen hidden-right">
+      <div class="zone-header">
+        <h2>🌲 迷霧神祕森林</h2>
+        <p class="zone-desc">踏入未知林境採集稀有物料。請隨時注意心跳與能見度，切勿迷失！</p>
+      </div>
+
+      <!-- 探索深度儀表盤與警報 -->
+      <div class="forest-hud glass-panel">
+        <div class="distance-gauge-wrap">
+          <div class="distance-info">
+            <span>探索距離：<strong id="forest-distance">0</strong> / 200m</span>
+            <span id="danger-level" class="danger-badge safe">安全範圍</span>
+          </div>
+          <div class="gauge-bar-bg">
+            <div id="gauge-fill" class="gauge-bar-fill"></div>
+            <div class="gauge-marker safe-mark" style="left: 50%;" title="安全邊界 100m"></div>
+            <div class="gauge-marker warn-mark" style="left: 75%;" title="危險邊界 150m"></div>
+          </div>
+          <div class="gauge-tips">
+            <span>0m 酒吧入口</span>
+            <span>100m 起霧警戒</span>
+            <span>150m 極度危險</span>
+            <span>200m 迷霧吞噬</span>
+          </div>
+        </div>
+
+        <div class="forest-control-actions">
+          <button id="btn-explore-forward" class="action-btn glow-green">
+            👣 深入探索 (+25m)
+          </button>
+          <button id="btn-explore-back" class="action-btn secondary">
+            ⛺ 返航酒吧 (-25m)
+          </button>
+          <button id="btn-emergency-return" class="action-btn danger">
+            🏃 緊急瞬移回吧台
+          </button>
+        </div>
+      </div>
+
+      <!-- 森林奇遇採集點 -->
+      <div class="forest-encounters" id="forest-encounters">
+        <!-- 動態生成的採集物或寶箱 -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 調酒工作台全螢幕互動 MODAL ==================== -->
+  <div id="bartender-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel bartending-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-icon">⚗️</span>
+          <h3>奇幻鍊金調酒台</h3>
+        </div>
+        <button id="close-bartender-btn" class="close-btn" title="離開調酒台">&times;</button>
+      </div>
+
+      <div class="bartending-body">
+        
+        <!-- 左側：調酒杯視覺即時渲染 -->
+        <div class="glass-visualization">
+          <div class="glass-frame">
+            <canvas id="cocktail-canvas" width="220" height="340"></canvas>
+            <div class="glass-capacity-indicator">
+              <span id="glass-volume-text">0 / 100 ml</span>
+            </div>
+          </div>
+          <!-- 當前層次與風味即時標籤 -->
+          <div class="current-flavors-hud" id="current-flavors-hud">
+            <div class="flavor-bar-item"><span>甘甜:</span><div class="mini-bar"><div id="hud-sweet" class="fill"></div></div></div>
+            <div class="flavor-bar-item"><span>酸爽:</span><div class="mini-bar"><div id="hud-sour" class="fill"></div></div></div>
+            <div class="flavor-bar-item"><span>烈度:</span><div class="mini-bar"><div id="hud-spirit" class="fill"></div></div></div>
+            <div class="flavor-bar-item"><span>魔幻:</span><div class="mini-bar"><div id="hud-magic" class="fill"></div></div></div>
+            <div class="flavor-bar-item"><span>辛辣:</span><div class="mini-bar"><div id="hud-spicy" class="fill"></div></div></div>
+          </div>
+        </div>
+
+        <!-- 右側：原料架與倒酒操作控制盤 -->
+        <div class="mix-controls">
+          <h4 class="ctrl-subhead">選擇原料（長按倒酒注入）：</h4>
+          <div class="ingredient-grid" id="ingredient-grid">
+            <!-- 由 JS 渲染玩家擁有的原料卡片 -->
+          </div>
+
+          <!-- 倒酒長按主按鈕 -->
+          <div class="pour-action-zone">
+            <button id="pour-btn" class="pour-btn glow-primary" disabled>
+              <span class="pour-btn-icon">💧</span>
+              <span class="pour-btn-text">選擇上方原料注入</span>
+            </button>
+            <p class="pour-tip">提示：按住按鈕不放注入原料，分段倒入可打造綺麗分層！</p>
+          </div>
+
+          <!-- 操作完成與重置 -->
+          <div class="mix-action-buttons">
+            <button id="reset-drink-btn" class="action-btn secondary">
+              🔄 倒掉重調
+            </button>
+            <button id="finish-drink-btn" class="action-btn glow-primary" disabled>
+              ✨ 調配完成，呈送客人
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 調酒成品結算與客人評價 MODAL ==================== -->
+  <div id="result-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel result-box">
+      <div class="result-header">
+        <span class="fanfare-icon">🌟</span>
+        <h2 id="res-drink-name">極光月影星霜</h2>
+        <span class="drink-tier-badge" id="res-drink-tier">特級特調</span>
+      </div>
+
+      <div class="result-content">
+        <!-- 三維雷達/評分 -->
+        <div class="rating-breakdown">
+          <div class="rating-item">
+            <span class="r-label">視覺與層次</span>
+            <div class="star-rating" id="res-visual-stars">⭐⭐⭐⭐⭐</div>
+          </div>
+          <div class="rating-item">
+            <span class="r-label">顧客風味契合</span>
+            <div class="star-rating" id="res-flavor-stars">⭐⭐⭐⭐</div>
+          </div>
+          <div class="rating-item">
+            <span class="r-label">倒酒精緻度</span>
+            <div class="star-rating" id="res-precision-stars">⭐⭐⭐⭐⭐</div>
+          </div>
+        </div>
+
+        <!-- 顧客評語 -->
+        <div class="npc-comment-bubble glass-panel">
+          <div class="npc-avatar-small" id="res-npc-avatar">🧝‍♀️</div>
+          <div class="npc-comment-text">
+            <strong id="res-npc-name">精靈學者 艾爾文</strong>
+            <p id="res-npc-comment">「這流動的奇幻色澤簡直如同夜空星辰！這份深邃的甘美正是我渴望的味道！」</p>
+          </div>
+        </div>
+
+        <!-- 三元資源收穫結算 -->
+        <div class="rewards-grid">
+          <div class="reward-card gold">
+            <span class="rw-icon">🪙</span>
+            <span class="rw-val" id="res-earn-gold">+45</span>
+            <span class="rw-desc">酒錢與小費</span>
+          </div>
+          <div class="reward-card rep">
+            <span class="rw-icon">⭐</span>
+            <span class="rw-val" id="res-earn-rep">+8</span>
+            <span class="rw-desc">聲望成長</span>
+          </div>
+          <div class="reward-card pts">
+            <span class="rw-icon">🔮</span>
+            <span class="rw-val" id="res-earn-pts">+12</span>
+            <span class="rw-desc">調酒師積分</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="confirm-result-btn" class="action-btn glow-primary full-width">
+          🎉 感謝招待，接待下一位客人
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 圖鑑紀錄收藏櫃 MODAL ==================== -->
+  <div id="recipe-book-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel book-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📖</span>
+          <h3>神秘特調圖鑑收藏櫃</h3>
+        </div>
+        <button id="close-book-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="book-body">
+        <p class="book-desc">嘗試不同原料組合與層次，點亮神秘飲品圖鑑！</p>
+        <div class="recipe-grid" id="recipe-grid">
+          <!-- JS 動態渲染解鎖圖鑑 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
