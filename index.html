@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>奇幻調酒館 (Fantasy Bartender) - 秘境探索與調酒工坊</title>
-  <meta name="description" content="奇幻童話風格調酒冒險！在迷霧林間尋覓隱藏寶箱與失落秘籍，混調出不可思議的魔法飲品。">
+  <title>奇幻調酒館 (Fantasy Bartender) - 專屬酒館與秘境探索</title>
+  <meta name="description" content="奇幻童話風格調酒冒險！自由進出酒館小屋調酒接待顧客，漫步街區與古林探尋原料。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
@@ -12,110 +12,70 @@
 </head>
 <body>
 
-  <!-- 主遊戲 2D 俯視世界 Canvas -->
+  <!-- 主遊戲 2D 畫布 -->
   <canvas id="world-canvas"></canvas>
 
-  <!-- 森林迷霧動態收窄遮罩 -->
+  <!-- 森林深處動態迷霧遮罩 -->
   <div id="mist-vignette" class="mist-vignette"></div>
 
-  <!-- 迷路遣返警報橫幅 -->
+  <!-- 迷路警報橫幅 -->
   <div id="lost-alert-banner" class="lost-alert-banner">
     <div class="lost-alert-card">
-      <span class="lost-crest">🌌 迷霧吞噬！</span>
-      <p>你在古林幽深處迷失了路徑，調酒提燈的魔力耗盡將你護送回酒館，部分剛採集的物料遺落在林間了...</p>
+      <span class="lost-crest">🌌 迷失在林深處！</span>
+      <p>你在古林深處忘記了回家的路徑，調酒提燈的魔力護送你回到了自己的酒館門口，慌亂中部分物料遺落了...</p>
     </div>
   </div>
 
-  <!-- ==================== 原創奇幻 UI 覆蓋層 ==================== -->
+  <!-- ==================== 極簡純淨 HUD 覆蓋層 ==================== -->
   <div class="ui-overlay">
     
-    <!-- 頂部資訊列：羊皮紙與水晶琉璃風格 -->
+    <!-- 頂部資訊列：典雅純粹，無小地圖干擾 -->
     <header class="fantasy-header">
-      <!-- 左側：奇幻星盤小地圖與區域 -->
-      <div class="astrolabe-panel">
-        <div class="astrolabe-badge">
-          <span class="astrolabe-icon">🧭</span>
-          <span id="current-zone-name" class="zone-name-text">奇幻酒館・主吧台</span>
-        </div>
-        <div class="astrolabe-radar-frame">
-          <canvas id="minimap-canvas" width="140" height="42"></canvas>
-        </div>
+      <!-- 當前區域名稱標籤 -->
+      <div class="zone-pill-panel">
+        <span class="zone-pin-icon">🏠</span>
+        <span id="current-zone-name" class="zone-name-text">奇幻酒館・門前庭院</span>
       </div>
 
-      <!-- 中央：三元魔導資源晶球 -->
+      <!-- 中央：三元資源晶球 -->
       <div class="alchemy-resources">
-        <div class="res-capsule gold-orb" title="金幣：在市集採購原料與擴建">
+        <div class="res-capsule gold-orb" title="金幣：在街區店鋪採購原料">
           <span class="orb-icon">🪙</span>
           <span class="orb-name">金幣</span>
           <span id="gold-display" class="orb-val">160</span>
         </div>
-        <div class="res-capsule rep-orb" title="聲望：解鎖市集高等材料與傳奇熟客">
+        <div class="res-capsule rep-orb" title="聲望：解鎖高等原料與稀有貴客">
           <span class="orb-icon">✨</span>
           <span class="orb-name">聲望</span>
           <span id="rep-display" class="orb-val">20</span>
         </div>
-        <div class="res-capsule pts-orb" title="靈性積分：調酒與尋寶成就">
+        <div class="res-capsule pts-orb" title="靈性積分：調酒與探索成就">
           <span class="orb-icon">🔮</span>
           <span class="orb-name">靈積分</span>
           <span id="points-display" class="orb-val">0</span>
         </div>
       </div>
 
-      <!-- 右側：功能吊飾（音效與特調秘籍錄） -->
+      <!-- 右側：功能按鈕（氛圍音效與失落酒譜秘籍） -->
       <div class="grimoire-actions">
         <button id="audio-toggle-btn" class="parchment-btn" title="切換氛圍音效">🔊</button>
-        <button id="recipe-book-btn" class="parchment-btn grimoire-btn" title="調酒圖鑑秘籍">📜 秘籍酒譜</button>
+        <button id="recipe-book-btn" class="parchment-btn" title="失落酒譜秘籍">📜 酒譜秘籍</button>
       </div>
     </header>
 
-    <!-- 森林探索深度羅盤（右側懸浮） -->
-    <div id="forest-danger-hud" class="forest-compass-card hidden">
-      <div class="compass-label">🌲 古林迷霧深處</div>
-      <div class="compass-track">
-        <div id="danger-meter-fill" class="compass-fill"></div>
-      </div>
-      <div class="compass-info">
-        <span id="danger-dist-text">0m</span>
-        <span id="danger-status-badge" class="state-safe">林道明晰</span>
-      </div>
-    </div>
-
-    <!-- 近身互動浮動引導徽記（走近 NPC、市集或樹後寶箱時浮現） -->
+    <!-- 近身互動浮動引導徽記（靠近門、吧台、攤位或寶箱時動態浮現） -->
     <div id="proximity-prompt" class="proximity-bubble hidden">
       <div class="bubble-inner">
-        <span class="key-pill">Space 空白鍵</span>
-        <span id="prompt-action-text" class="bubble-text">開啟寶箱</span>
+        <span class="key-pill">Space</span>
+        <span id="prompt-action-text" class="bubble-text">進入酒館</span>
       </div>
     </div>
 
-    <!-- 底部操作小提示（極簡優雅浮字，非熱蘭遮樣式） -->
-    <div class="floating-tips">
-      <span>✦ <b>WASD</b> 或 <b>點擊地面</b> 自由走動 ✦ <b>空白鍵</b> 互動 ✦ <b>J / Shift</b> 疾跑 ✦</span>
-    </div>
-
-    <!-- 左下角：原創星光水晶搖桿（手機/觸控用） -->
+    <!-- 極簡半透明觸控虛擬搖桿（為手機端保留，電腦端隱蔽不干擾） -->
     <div class="crystal-joystick-wrap" id="joystick-zone">
       <div class="crystal-joy-base" id="joystick-base">
         <div class="crystal-joy-core" id="joystick-stick"></div>
-        <div class="joy-compass-points">
-          <span class="cp-n">N</span>
-          <span class="cp-s">S</span>
-          <span class="cp-w">W</span>
-          <span class="cp-e">E</span>
-        </div>
       </div>
-    </div>
-
-    <!-- 右下角：原創琉璃符文動作按鈕（支援手機單手操作） -->
-    <div class="crystal-actions-wrap">
-      <button id="touch-sprint-btn" class="rune-circle-btn sprint-rune" title="疾跑">
-        <span class="rune-icon">🍃</span>
-        <span class="rune-text">疾馳 [J]</span>
-      </button>
-      <button id="touch-interact-btn" class="rune-circle-btn action-rune" title="互動/調酒/開箱">
-        <span class="rune-icon">✨</span>
-        <span class="rune-text">互動 [空白]</span>
-      </button>
     </div>
 
   </div>
@@ -123,32 +83,31 @@
   <!-- ==================== 寶箱開啟獲得秘籍 / 原料 驚喜彈窗 ==================== -->
   <div id="chest-reward-modal" class="modal-backdrop hidden">
     <div class="treasure-open-card">
-      <div class="treasure-glow-aura"></div>
       <div class="treasure-chest-icon">🎁</div>
       <span class="treasure-badge" id="chest-reward-type">古林失落秘籍</span>
       <h2 class="treasure-title" id="chest-reward-title">《翡翠妖精之露》酒譜</h2>
-      <p class="treasure-desc" id="chest-reward-desc">你在大樹遮蔽的隱密角落挖掘出了前代大調酒師遺留的失落秘方，已永久收錄進你的秘籍圖鑑中！</p>
+      <p class="treasure-desc" id="chest-reward-desc">你在大樹遮蔽的林蔭後挖掘出了前代調酒師的秘傳卷軸，已完整收錄進你的秘籍圖鑑中！</p>
       <div class="treasure-reward-pill" id="chest-reward-pill">
         <span>✨ 靈積分 +25</span>
         <span>📖 解鎖新酒譜</span>
       </div>
       <button id="close-chest-btn" class="fantasy-btn primary-glow">
-        收納至背包・繼續探索
+        收存入背包・繼續探索
       </button>
     </div>
   </div>
 
-  <!-- ==================== 市集商店 MODAL ==================== -->
+  <!-- ==================== 街區特色店鋪 MODAL ==================== -->
   <div id="market-modal" class="modal-backdrop hidden">
     <div class="modal-dialog fantasy-card-panel market-box">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🛒</span>
-          <h3>星光市集・奇珍原料攤位</h3>
+          <span id="shop-modal-icon">🏪</span>
+          <h3 id="shop-modal-name">街區特色原料行</h3>
         </div>
         <button id="close-market-btn" class="parchment-close">&times;</button>
       </div>
-      <p class="modal-intro">在此採購常規基礎調酒原料與天然糖漿。隨著酒館聲望提高，將吸引更多稀有商販！</p>
+      <p class="modal-intro" id="shop-modal-intro">在此採購特製風味原料。隨著酒館聲望提高，能購得更珍稀的頂級基底！</p>
       <div class="market-grid" id="market-grid"></div>
     </div>
   </div>
@@ -195,7 +154,7 @@
           </div>
         </div>
 
-        <!-- 原料托盤與倒酒控制 -->
+        <!-- 原料托盤與注酒按鈕 -->
         <div class="mix-controls">
           <div class="ctrl-subhead">選擇原料（長按注酒混調）：</div>
           <div class="ingredient-grid" id="ingredient-grid"></div>
@@ -285,7 +244,7 @@
         <button id="close-book-btn" class="parchment-close">&times;</button>
       </div>
       <div class="book-body">
-        <p class="book-desc">在古林大樹遮蔽處尋找寶箱，或大膽嘗試不同原料組合，即可點亮秘籍圖鑑！</p>
+        <p class="book-desc">在古林大樹遮蔽處尋找寶箱，或嘗試不同原料組合，即可點亮秘籍圖鑑！</p>
         <div class="recipe-grid" id="recipe-grid"></div>
       </div>
     </div>

@@ -1,23 +1,21 @@
 /* =========================================================
-   奇幻調酒館 (Fantasy Bartender) - 原創奇幻冒險風格樣式表
-   揮別科技機械同心圓，走向溫暖琥珀、秘境翡翠與星光琉璃繪本風
+   奇幻調酒館 (Fantasy Bartender) - 純淨繪本與沉浸工坊樣式表
+   純淨視野、無小地圖干擾、溫暖琥珀與秘境翡翠質感
    ========================================================= */
 
 :root {
-  --bg-deep: #0a0d16;
-  --panel-wood: rgba(26, 21, 35, 0.88);
-  --panel-border: rgba(230, 180, 80, 0.55);
-  --panel-inner-glow: rgba(250, 215, 120, 0.1);
+  --bg-deep: #080a12;
+  --panel-wood: rgba(24, 20, 32, 0.88);
+  --panel-border: rgba(246, 194, 62, 0.5);
+  --panel-inner-glow: rgba(246, 194, 62, 0.08);
 
   --amber-gold: #f6c23e;
   --amber-glow: rgba(246, 194, 62, 0.45);
   --forest-emerald: #1dd1a1;
-  --forest-glow: rgba(29, 209, 161, 0.4);
   --magic-violet: #a55eea;
-  --magic-glow: rgba(165, 94, 234, 0.45);
   --crystal-cyan: #00d2d3;
 
-  --text-bright: #fdfdfd;
+  --text-bright: #ffffff;
   --text-parchment: #e8d8b8;
   --text-muted: #9aa0b2;
 
@@ -43,7 +41,7 @@ html, body {
   color: var(--text-bright);
 }
 
-/* ================== 全螢幕遊戲世界畫布 ================== */
+/* 主畫布 */
 #world-canvas {
   position: absolute;
   top: 0;
@@ -54,7 +52,7 @@ html, body {
   z-index: 1;
 }
 
-/* ================== 森林迷霧收窄與遣返警告 ================== */
+/* 迷霧與迷失警告 */
 .mist-vignette {
   position: absolute;
   inset: 0;
@@ -62,18 +60,18 @@ html, body {
   z-index: 5;
   transition: opacity 0.4s ease;
   opacity: 0;
-  box-shadow: inset 0 0 150px 70px rgba(165, 94, 234, 0.45);
+  box-shadow: inset 0 0 160px 80px rgba(165, 94, 234, 0.45);
 }
 
 .mist-vignette.danger {
   opacity: 0.85;
-  box-shadow: inset 0 0 210px 110px rgba(235, 77, 75, 0.85);
+  box-shadow: inset 0 0 220px 120px rgba(235, 77, 75, 0.85);
   animation: breathMist 1.4s infinite alternate ease-in-out;
 }
 
 .mist-vignette.extreme {
   opacity: 0.98;
-  box-shadow: inset 0 0 290px 160px rgba(186, 24, 27, 0.95);
+  box-shadow: inset 0 0 300px 170px rgba(186, 24, 27, 0.95);
   animation: breathMistFast 0.8s infinite alternate ease-in-out;
 }
 
@@ -89,7 +87,7 @@ html, body {
 
 .lost-alert-banner {
   position: absolute;
-  top: 90px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(-180%);
   z-index: 99;
@@ -119,7 +117,7 @@ html, body {
   color: #ff7979;
 }
 
-/* ================== 原創奇幻 UI 頂部列 ================== */
+/* HUD 覆蓋層 */
 .ui-overlay {
   position: absolute;
   inset: 0;
@@ -128,7 +126,7 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 16px 24px;
 }
 
 .fantasy-header {
@@ -139,49 +137,33 @@ html, body {
   pointer-events: auto;
 }
 
-/* 1. 左側星盤羅盤小地圖 */
-.astrolabe-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: var(--panel-wood);
-  border: 1.5px solid var(--panel-border);
-  padding: 6px 10px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 10px var(--panel-inner-glow);
-  backdrop-filter: blur(8px);
-}
-
-.astrolabe-badge {
+/* 當前區域膠囊（取代小地圖） */
+.zone-pill-panel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  background: var(--panel-wood);
+  border: 1.5px solid var(--panel-border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
 }
 
-.astrolabe-icon { font-size: 1rem; }
-
+.zone-pin-icon { font-size: 1.1rem; }
 .zone-name-text {
   font-family: var(--font-serif);
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--amber-gold);
+  letter-spacing: 0.5px;
 }
 
-.astrolabe-radar-frame {
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(8, 10, 18, 0.7);
-  line-height: 0;
-}
-
-#minimap-canvas { display: block; }
-
-/* 2. 中央資源晶球（原創立體晶球感） */
+/* 資源晶球 */
 .alchemy-resources {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: var(--panel-wood);
   border: 1.5px solid var(--panel-border);
   padding: 6px 18px;
@@ -194,12 +176,10 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.88rem;
 }
 
 .orb-icon { font-size: 1.2rem; }
 .orb-name { color: var(--text-parchment); font-size: 0.76rem; }
-
 .orb-val {
   font-weight: 800;
   font-size: 1.05rem;
@@ -211,11 +191,8 @@ html, body {
 .rep-orb .orb-val { color: var(--magic-violet); }
 .pts-orb .orb-val { color: var(--crystal-cyan); }
 
-/* 3. 右側功能按鈕（羊皮紙質感） */
-.grimoire-actions {
-  display: flex;
-  gap: 8px;
-}
+/* 右側功能按鈕 */
+.grimoire-actions { display: flex; gap: 8px; }
 
 .parchment-btn {
   background: linear-gradient(135deg, #2c223b, #1b1626);
@@ -237,52 +214,7 @@ html, body {
   box-shadow: 0 0 16px var(--amber-glow);
 }
 
-/* 4. 右側森林深入度指針卡片 */
-.forest-compass-card {
-  position: absolute;
-  top: 75px;
-  right: 20px;
-  background: var(--panel-wood);
-  border: 1.5px solid var(--forest-emerald);
-  padding: 8px 14px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-  min-width: 160px;
-  pointer-events: auto;
-}
-
-.compass-label { font-size: 0.78rem; color: var(--text-parchment); margin-bottom: 4px; }
-
-.compass-track {
-  height: 7px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 4px;
-}
-
-.compass-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--forest-emerald), var(--amber-gold), #eb4d4b);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.compass-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.74rem;
-}
-
-.state-safe { color: var(--forest-emerald); font-weight: 700; }
-.state-warn { color: var(--amber-gold); font-weight: 700; }
-.state-danger { color: #ff7979; font-weight: 700; animation: blink 0.8s infinite; }
-
-@keyframes blink { 50% { opacity: 0.4; } }
-
-/* 5. 近身浮動互動引導 */
+/* 近身浮動引導 */
 .proximity-bubble {
   position: absolute;
   pointer-events: none;
@@ -325,126 +257,44 @@ html, body {
   color: #fff;
 }
 
-/* 6. 極簡懸浮操作提示（非熱蘭遮樣式） */
-.floating-tips {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(246, 194, 62, 0.7);
-  font-size: 0.78rem;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  pointer-events: none;
-}
-
-/* ================== 原創星光水晶搖桿 ================== */
+/* 極簡半透明手機搖桿 */
 .crystal-joystick-wrap {
   position: absolute;
   bottom: 24px;
   left: 24px;
-  width: 110px;
-  height: 110px;
+  width: 90px;
+  height: 90px;
   pointer-events: auto;
   z-index: 20;
   touch-action: none;
+  opacity: 0.65;
 }
 
 .crystal-joy-base {
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(40, 30, 60, 0.7) 0%, rgba(15, 12, 25, 0.9) 100%);
-  border: 2px solid var(--magic-violet);
+  background: radial-gradient(circle, rgba(40, 30, 60, 0.4) 0%, rgba(15, 12, 25, 0.6) 100%);
+  border: 1.5px solid rgba(246, 194, 62, 0.5);
   border-radius: 50%;
   position: relative;
-  box-shadow: 0 0 20px var(--magic-glow), inset 0 0 15px rgba(165, 94, 234, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .crystal-joy-core {
-  width: 44px;
-  height: 44px;
-  background: radial-gradient(circle, #d980fa 0%, #8854d0 100%);
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle, #f6c23e 0%, #d35400 100%);
   border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 16px rgba(217, 128, 250, 0.8);
+  box-shadow: 0 0 14px rgba(246, 194, 62, 0.8);
   position: absolute;
   pointer-events: none;
   transform: translate(0px, 0px);
 }
 
-.joy-compass-points {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  font-size: 0.62rem;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 700;
-  font-family: var(--font-serif);
-}
-
-.cp-n { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); }
-.cp-s { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); }
-.cp-w { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
-.cp-e { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
-
-/* ================== 原創琉璃符文動作按鈕 ================== */
-.crystal-actions-wrap {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  pointer-events: auto;
-  z-index: 20;
-}
-
-.rune-circle-btn {
-  border-radius: 50%;
-  border: 2px solid var(--panel-border);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  transition: all 0.15s ease;
-  touch-action: manipulation;
-}
-
-.rune-circle-btn:active { transform: scale(0.92); }
-
-.sprint-rune {
-  width: 58px;
-  height: 58px;
-  background: radial-gradient(circle, #2d3436 0%, #1e272e 100%);
-  border-color: var(--text-parchment);
-}
-
-.sprint-rune.active {
-  background: radial-gradient(circle, #20bf6b 0%, #0fb9b1 100%);
-  border-color: #fff;
-  box-shadow: 0 0 20px var(--forest-glow);
-}
-
-.action-rune {
-  width: 78px;
-  height: 78px;
-  background: radial-gradient(circle, #f39c12 0%, #b71540 100%);
-  border-color: var(--amber-gold);
-  box-shadow: 0 0 26px var(--amber-glow);
-}
-
-.action-rune:active { box-shadow: 0 0 35px rgba(246, 194, 62, 0.9); }
-
-.rune-icon { font-size: 1.35rem; line-height: 1; }
-.rune-text { font-size: 0.65rem; font-weight: 700; margin-top: 3px; color: var(--text-parchment); }
-
-/* ================== 寶箱開箱獲得秘籍彈窗 ================== */
+/* 寶箱開箱彈窗 */
 .treasure-open-card {
   position: relative;
   background: linear-gradient(135deg, rgba(35, 24, 48, 0.96), rgba(18, 14, 28, 0.98));
@@ -462,54 +312,13 @@ html, body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-.treasure-chest-icon {
-  font-size: 3.5rem;
-  margin-bottom: 6px;
-  animation: chestBounce 0.8s ease;
-}
+.treasure-chest-icon { font-size: 3.5rem; margin-bottom: 6px; }
+.treasure-badge { display: inline-block; font-size: 0.8rem; background: rgba(246, 194, 62, 0.2); border: 1px solid var(--amber-gold); color: var(--amber-gold); padding: 2px 10px; border-radius: 10px; font-weight: 700; margin-bottom: 8px; }
+.treasure-title { font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-bottom: 8px; }
+.treasure-desc { font-size: 0.88rem; color: var(--text-parchment); line-height: 1.5; margin-bottom: 16px; }
+.treasure-reward-pill { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; font-size: 0.85rem; color: var(--crystal-cyan); font-weight: 700; }
 
-@keyframes chestBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-.treasure-badge {
-  display: inline-block;
-  font-size: 0.8rem;
-  background: rgba(246, 194, 62, 0.2);
-  border: 1px solid var(--amber-gold);
-  color: var(--amber-gold);
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.treasure-title {
-  font-family: var(--font-serif);
-  font-size: 1.6rem;
-  color: #fff;
-  margin-bottom: 8px;
-}
-
-.treasure-desc {
-  font-size: 0.88rem;
-  color: var(--text-parchment);
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-
-.treasure-reward-pill {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  font-size: 0.85rem;
-  color: var(--crystal-cyan);
-  font-weight: 700;
-}
-
-/* ================== 通用奇幻彈窗 ================== */
+/* 彈窗通用 */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -572,12 +381,7 @@ html, body {
 }
 
 .parchment-close:hover { color: #fff; }
-
-.modal-intro {
-  font-size: 0.85rem;
-  color: var(--text-parchment);
-  margin-bottom: 14px;
-}
+.modal-intro { font-size: 0.85rem; color: var(--text-parchment); margin-bottom: 14px; }
 
 /* 按鈕風格 */
 .fantasy-btn {
@@ -607,11 +411,7 @@ html, body {
   color: #fff;
 }
 
-.fantasy-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  box-shadow: none;
-}
+.fantasy-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
 /* 市集網格 */
 .market-grid {
@@ -622,7 +422,7 @@ html, body {
 
 .market-card {
   padding: 12px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   display: flex;
@@ -637,7 +437,7 @@ html, body {
 .mtag { font-size: 0.68rem; padding: 2px 5px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; color: var(--text-parchment); }
 .market-card-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 6px; }
 
-/* 調酒台顧客點單橫幅 */
+/* 調酒台 */
 .customer-order-banner {
   padding: 12px 16px;
   display: flex;
@@ -649,18 +449,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.cust-order-avatar {
-  font-size: 2.8rem;
-  width: 58px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  border: 1.5px solid var(--magic-violet);
-}
-
+.cust-order-avatar { font-size: 2.8rem; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); border-radius: 50%; border: 1.5px solid var(--magic-violet); }
 .cust-order-info { flex: 1; }
 .cust-order-title { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .cust-order-tag { font-size: 0.72rem; background: var(--magic-violet); color: #fff; padding: 1px 6px; border-radius: 6px; }
@@ -674,7 +463,6 @@ html, body {
 .tag-magic { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
 .tag-spicy { background: rgba(255, 71, 87, 0.25); color: #ff4757; border: 1px solid #ff4757; }
 
-/* 調酒台排版 */
 .bartending-body { display: flex; gap: 20px; flex-wrap: wrap; }
 .glass-visualization { flex: 0 0 210px; display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; }
 .glass-frame { position: relative; width: 200px; height: 300px; background: rgba(0, 0, 0, 0.4); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; }
@@ -699,17 +487,12 @@ html, body {
 .ing-select-card.selected { border-color: var(--amber-gold); background: rgba(246, 194, 62, 0.18); box-shadow: 0 0 10px var(--amber-glow); }
 
 .pour-action-zone { display: flex; flex-direction: column; gap: 4px; text-align: center; }
-.pour-main-btn {
-  background: linear-gradient(135deg, #0984e3, #00cec9);
-  color: #fff;
-  padding: 14px;
-  font-size: 1rem;
-}
+.pour-main-btn { background: linear-gradient(135deg, #0984e3, #00cec9); color: #fff; padding: 14px; font-size: 1rem; }
 .pour-main-btn.pouring { transform: scale(0.97); box-shadow: 0 0 20px rgba(0, 206, 201, 0.8); }
 .pour-tip { font-size: 0.72rem; color: var(--text-muted); }
 .mix-action-buttons { display: flex; gap: 10px; margin-top: auto; }
 
-/* 結算面板 */
+/* 結算 */
 .result-box { max-width: 480px; text-align: center; }
 .fanfare-icon { font-size: 2.5rem; display: block; margin-bottom: 4px; }
 #res-drink-name { font-family: var(--font-serif); color: var(--amber-gold); font-size: 1.6rem; margin-bottom: 4px; }
@@ -727,21 +510,16 @@ html, body {
 .reward-card.pts .rw-val { color: var(--crystal-cyan); }
 .full-width { width: 100%; }
 
-/* 圖鑑面板 */
+/* 圖鑑 */
 .book-box { max-width: 600px; }
 .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .recipe-card { padding: 10px; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
 .recipe-card.locked { opacity: 0.45; filter: grayscale(0.8); }
 
-/* ================== 手機適配 ================== */
 @media (max-width: 768px) {
-  .floating-tips { display: none; }
   .fantasy-header { flex-wrap: wrap; gap: 6px; }
+  .zone-pill-panel { padding: 6px 12px; }
   .alchemy-resources { padding: 4px 10px; gap: 6px; }
   .res-capsule { font-size: 0.78rem; }
-  .crystal-joystick-wrap { bottom: 16px; left: 16px; width: 95px; height: 95px; }
-  .crystal-actions-wrap { bottom: 16px; right: 16px; gap: 10px; }
-  .action-rune { width: 68px; height: 68px; }
-  .sprint-rune { width: 50px; height: 50px; }
   .bartending-body { flex-direction: column; }
 }
