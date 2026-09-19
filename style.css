@@ -1,106 +1,110 @@
 /* =========================================================
-   奇幻調酒館 (Fantasy Bartender) - 核心樣式表
-   深色玻璃擬態 + 奇幻鍊金光效 + 響應式手機跨裝置適配
+   奇幻調酒館 (Fantasy Bartender) - 2D 俯視自由走動世界樣式
+   參照參考截圖風格：深色高質感 + 金色典雅線框 + 虛擬搖桿與 HUD
    ========================================================= */
 
 :root {
-  --bg-main: #0c0e18;
-  --bg-gradient: radial-gradient(circle at 50% 20%, #1e1938 0%, #0d0f1a 70%, #07080d 100%);
-  --surface-glass: rgba(26, 29, 46, 0.72);
-  --surface-glass-border: rgba(255, 255, 255, 0.12);
-  --surface-hover: rgba(45, 50, 78, 0.85);
-
-  --accent-gold: #f9ca24;
-  --accent-gold-glow: rgba(249, 202, 36, 0.45);
-  --accent-magic: #a55eea;
-  --accent-magic-glow: rgba(165, 94, 234, 0.45);
-  --accent-cyan: #00d2d3;
-  --accent-cyan-glow: rgba(0, 210, 211, 0.4);
-  --accent-green: #2ecc71;
-  --accent-red: #ff4757;
-
-  --text-main: #f1f2f6;
-  --text-muted: #a4b0be;
+  --bg-dark: #080911;
+  --panel-bg: rgba(14, 18, 32, 0.82);
+  --panel-border: rgba(249, 202, 36, 0.45);
+  --panel-border-subtle: rgba(255, 255, 255, 0.12);
   
-  --font-display: 'Cinzel', serif;
-  --font-body: 'Noto Sans TC', sans-serif;
+  --gold: #f9ca24;
+  --gold-glow: rgba(249, 202, 36, 0.4);
+  --magic: #a55eea;
+  --magic-glow: rgba(165, 94, 234, 0.45);
+  --cyan: #00d2d3;
+  --cyan-glow: rgba(0, 210, 211, 0.4);
+  --red: #ff4757;
+  --green: #2ecc71;
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --transition-fast: 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --transition-normal: 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+  --text-main: #f5f6fa;
+  --text-dim: #9aa0a6;
+
+  --font-title: 'Cinzel', serif;
+  --font-sans: 'Noto Sans TC', sans-serif;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  font-family: var(--font-body);
-  background: var(--bg-main);
-  background-image: var(--bg-gradient);
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-dark);
+  font-family: var(--font-sans);
   color: var(--text-main);
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
-/* ================== 迷霧與心跳警報遮罩 ================== */
-.mist-overlay {
-  position: fixed;
+/* ================== 全螢幕 2D 遊戲世界畫布 ================== */
+#world-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  cursor: crosshair;
+}
+
+/* ================== 迷霧與心跳動態遮罩 ================== */
+.mist-vignette {
+  position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 990;
+  z-index: 5;
+  transition: opacity 0.4s ease;
   opacity: 0;
-  transition: opacity 0.5s ease;
-  box-shadow: inset 0 0 120px 40px rgba(165, 94, 234, 0.55);
+  box-shadow: inset 0 0 140px 60px rgba(165, 94, 234, 0.4);
 }
 
-.mist-overlay.warning {
-  opacity: 0.7;
-  animation: mistPulse 1.4s infinite alternate ease-in-out;
-  box-shadow: inset 0 0 160px 70px rgba(255, 71, 87, 0.75);
+.mist-vignette.danger {
+  opacity: 0.85;
+  box-shadow: inset 0 0 200px 100px rgba(255, 71, 87, 0.8);
+  animation: pulseMist 1.2s infinite alternate ease-in-out;
 }
 
-.mist-overlay.extreme {
-  opacity: 0.95;
-  animation: mistPulseFast 0.8s infinite alternate ease-in-out;
-  box-shadow: inset 0 0 220px 110px rgba(220, 20, 60, 0.9);
+.mist-vignette.extreme {
+  opacity: 0.98;
+  box-shadow: inset 0 0 280px 150px rgba(235, 59, 90, 0.95);
+  animation: pulseMistFast 0.7s infinite alternate ease-in-out;
 }
 
-@keyframes mistPulse {
-  0% { transform: scale(1); opacity: 0.55; }
-  100% { transform: scale(1.03); opacity: 0.85; }
+@keyframes pulseMist {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.02); opacity: 0.9; }
 }
 
-@keyframes mistPulseFast {
-  0% { transform: scale(0.98); opacity: 0.75; }
-  100% { transform: scale(1.05); opacity: 1; }
+@keyframes pulseMistFast {
+  0% { transform: scale(0.99); opacity: 0.85; }
+  100% { transform: scale(1.03); opacity: 1; }
 }
 
 .lost-alert-banner {
-  position: fixed;
-  top: 80px;
+  position: absolute;
+  top: 90px;
   left: 50%;
-  transform: translateX(-50%) translateY(-150%);
-  background: rgba(255, 71, 87, 0.92);
-  border: 1px solid #ff6b81;
-  padding: 16px 24px;
-  border-radius: var(--radius-md);
+  transform: translateX(-50%) translateY(-180%);
+  background: rgba(235, 59, 90, 0.94);
+  border: 2px solid #ff6b81;
+  padding: 16px 28px;
+  border-radius: 16px;
   color: #fff;
-  z-index: 999;
+  z-index: 99;
   text-align: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
   transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   max-width: 90%;
+  pointer-events: none;
 }
 
 .lost-alert-banner.show {
@@ -109,650 +113,399 @@ body {
 
 .lost-icon {
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 800;
   display: block;
   margin-bottom: 6px;
 }
 
-/* ================== 通用玻璃擬態卡片 ================== */
+/* ================== 通用玻璃擬態面板 ================== */
 .glass-panel {
-  background: var(--surface-glass);
+  background: var(--panel-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--surface-glass-border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.38);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(249, 202, 36, 0.08);
 }
 
-/* ================== 頂部狀態列 ================== */
-.game-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: rgba(13, 15, 26, 0.88);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--surface-glass-border);
-  gap: 12px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.tavern-emblem {
-  font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px var(--accent-magic));
-}
-
-.brand-title {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  background: linear-gradient(135deg, #fff 30%, #dcdde1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.economy-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.stat-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--surface-glass-border);
-  font-size: 0.88rem;
-  transition: transform var(--transition-fast);
-}
-
-.stat-pill.gold { border-color: rgba(249, 202, 36, 0.35); }
-.stat-pill.rep { border-color: rgba(165, 94, 234, 0.35); }
-.stat-pill.pts { border-color: rgba(0, 210, 211, 0.35); }
-
-.stat-label {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-}
-
-.stat-val {
-  font-weight: 700;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--surface-glass-border);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: all var(--transition-fast);
-}
-
-.icon-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  transform: translateY(-2px);
-}
-
-/* ================== 區域導航條 ================== */
-.zone-nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px 16px;
-  background: rgba(18, 21, 35, 0.6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  gap: 10px;
-}
-
-.nav-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  padding: 8px 18px;
-  border-radius: 24px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.nav-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.nav-btn.active {
-  color: #fff;
-  background: linear-gradient(135deg, rgba(165, 94, 234, 0.3), rgba(0, 210, 211, 0.2));
-  border-color: rgba(165, 94, 234, 0.5);
-  box-shadow: 0 0 16px rgba(165, 94, 234, 0.3);
-}
-
-.nav-arrow {
-  font-size: 0.75rem;
-  opacity: 0.6;
-}
-
-/* ================== 視口切換區域 ================== */
-.main-viewport {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-}
-
-.zone-screen {
-  flex: 0 0 100%;
-  width: 100%;
-  padding: 24px;
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
-  overflow-y: auto;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.zone-screen.hidden-left {
-  display: none;
-  transform: translateX(-60px);
-  opacity: 0;
-}
-
-.zone-screen.hidden-right {
-  display: none;
-  transform: translateX(60px);
-  opacity: 0;
-}
-
-.zone-screen.active-zone {
-  display: block;
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.zone-header {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.zone-header h2 {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  margin-bottom: 6px;
-  color: #fff;
-}
-
-.zone-desc {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-/* ================== 1. 市集區域 ================== */
-.market-shelves {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
-}
-
-.market-item-card {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
-}
-
-.market-item-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-gold);
-}
-
-.item-top {
-  display: flex;
-  gap: 12px;
-}
-
-.item-icon {
-  font-size: 2.2rem;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: var(--radius-sm);
-  width: 54px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--surface-glass-border);
-}
-
-.item-details h4 {
-  font-size: 1.05rem;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.item-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.tag-badge {
-  font-size: 0.72rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-}
-
-.item-desc {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.item-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.item-stock {
-  font-size: 0.8rem;
-  color: var(--accent-cyan);
-}
-
-.item-price {
-  font-weight: 700;
-  color: var(--accent-gold);
-  font-size: 0.95rem;
-}
-
-.buy-btn {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
-  color: #fff;
-  border: none;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.buy-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px var(--accent-gold-glow);
-}
-
-.buy-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ================== 2. 中央酒吧區域 ================== */
-.tavern-stage {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.customer-card {
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  background: linear-gradient(135deg, rgba(32, 28, 56, 0.75), rgba(20, 22, 38, 0.85));
-}
-
-.customer-avatar-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.customer-avatar {
-  font-size: 3.5rem;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 50%;
-  border: 2px solid var(--accent-magic);
-  box-shadow: 0 0 20px var(--accent-magic-glow);
-}
-
-.customer-badge {
-  font-size: 0.75rem;
-  background: var(--accent-magic);
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.customer-dialog {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.speech-bubble {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
-  padding: 14px 18px;
-  position: relative;
-}
-
-.speech-bubble p {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #eceff1;
-  margin-bottom: 8px;
-}
-
-.flavor-desire {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.desire-tag {
-  font-size: 0.78rem;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-}
-
-.tag-sweet { background: rgba(255, 107, 129, 0.25); color: #ff6b81; border: 1px solid #ff6b81; }
-.tag-sour { background: rgba(254, 202, 87, 0.25); color: #feca57; border: 1px solid #feca57; }
-.tag-spirit { background: rgba(84, 160, 255, 0.25); color: #54a0ff; border: 1px solid #54a0ff; }
-.tag-magic { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
-.tag-spicy { background: rgba(255, 71, 87, 0.25); color: #ff4757; border: 1px solid #ff4757; }
-
-.action-btn {
-  padding: 10px 22px;
-  border-radius: var(--radius-sm);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all var(--transition-fast);
-}
-
-.action-btn.glow-primary {
-  background: linear-gradient(135deg, var(--accent-magic), #7d2ae8);
-  color: #fff;
-  box-shadow: 0 4px 18px var(--accent-magic-glow);
-}
-
-.action-btn.glow-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px var(--accent-magic-glow);
-}
-
-.action-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--surface-glass-border);
-  color: #fff;
-}
-
-.action-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.action-btn.danger {
-  background: linear-gradient(135deg, #eb3b5a, #c0392b);
-  color: #fff;
-}
-
-.action-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.bar-counter {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.counter-shelf {
-  text-align: center;
-  padding: 20px 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
-}
-
-.shelf-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  letter-spacing: 2px;
-}
-
-.active-cocktail-stand {
-  min-height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.empty-glass-hint {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-muted);
-  font-size: 0.95rem;
-}
-
-.empty-glass-hint .hint-icon {
-  font-size: 1.8rem;
-  opacity: 0.7;
-}
-
-.inventory-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.inv-title {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.inv-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.inv-chip {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--surface-glass-border);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* ================== 3. 神祕森林區域 ================== */
-.forest-hud {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.distance-gauge-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.distance-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.95rem;
-}
-
-.danger-badge {
-  font-size: 0.78rem;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-
-.danger-badge.safe { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-.danger-badge.warning { background: rgba(243, 156, 18, 0.25); color: #f39c12; border: 1px solid #f39c12; }
-.danger-badge.danger { background: rgba(231, 76, 60, 0.3); color: #e74c3c; border: 1px solid #e74c3c; animation: blink 1s infinite; }
-
-@keyframes blink { 50% { opacity: 0.5; } }
-
-.gauge-bar-bg {
-  height: 14px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 7px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--surface-glass-border);
-}
-
-.gauge-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #2ecc71 0%, #f39c12 55%, #e74c3c 90%);
-  border-radius: 7px;
-  transition: width var(--transition-normal);
-}
-
-.gauge-marker {
+/* ================== HUD 覆蓋層總體佈局 ================== */
+.ui-overlay {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: rgba(255, 255, 255, 0.5);
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 18px;
 }
 
-.gauge-tips {
+/* 頂部 Header 列 */
+.hud-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.forest-control-actions {
-  display: flex;
+  align-items: flex-start;
   gap: 12px;
-  flex-wrap: wrap;
+  pointer-events: auto;
 }
 
-.forest-control-actions .action-btn {
-  flex: 1;
+/* 小地圖面板（參照截圖左上角） */
+.minimap-panel {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   min-width: 140px;
 }
 
-.action-btn.glow-green {
-  background: linear-gradient(135deg, #10ac84, #1dd1a1);
+.minimap-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.minimap-canvas-wrap {
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  line-height: 0;
+}
+
+#minimap-canvas {
+  display: block;
+}
+
+/* 中央資源三元條 */
+.economy-hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border-radius: 24px;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+}
+
+.stat-icon {
+  font-size: 1.15rem;
+}
+
+.stat-title {
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+
+.stat-num {
+  font-weight: 800;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(16, 172, 132, 0.4);
 }
 
-.forest-encounters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+.stat-badge.gold .stat-num { color: var(--gold); }
+.stat-badge.rep .stat-num { color: var(--magic); }
+.stat-badge.pts .stat-num { color: var(--cyan); }
+
+/* 右側功能按鈕 */
+.quick-tools {
+  display: flex;
+  gap: 8px;
 }
 
-.encounter-card {
-  padding: 16px;
+.hud-icon-btn {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.hud-icon-btn:hover {
+  background: rgba(45, 52, 78, 0.9);
+  transform: translateY(-2px);
+  border-color: var(--gold);
+}
+
+/* 森林深度即時指標（右上角邊緣） */
+.forest-danger-hud {
+  position: absolute;
+  top: 75px;
+  right: 18px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+  min-width: 170px;
+  pointer-events: auto;
+}
+
+.danger-title {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.danger-meter-bg {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.danger-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.danger-label-row {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  text-align: center;
-  background: rgba(20, 24, 38, 0.7);
-  transition: all var(--transition-fast);
+  font-size: 0.75rem;
 }
 
-.encounter-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-green);
+.badge-safe { color: var(--green); font-weight: 700; }
+.badge-warning { color: #f39c12; font-weight: 700; }
+.badge-danger { color: var(--red); font-weight: 700; animation: blink 0.8s infinite; }
+
+@keyframes blink { 50% { opacity: 0.4; } }
+
+/* 近身互動提示標籤（浮於物體上方） */
+.proximity-prompt {
+  position: absolute;
+  pointer-events: none;
+  z-index: 15;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.encounter-icon {
-  font-size: 2.6rem;
-  margin-bottom: 4px;
+.proximity-prompt.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
-.encounter-title {
-  font-size: 1.05rem;
+.prompt-pill {
+  background: rgba(10, 12, 22, 0.92);
+  border: 1.5px solid var(--gold);
+  border-radius: 20px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 16px var(--gold-glow);
+  animation: promptBob 1.2s infinite ease-in-out;
+}
+
+@keyframes promptBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.prompt-key {
+  background: var(--gold);
+  color: #111;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.prompt-text {
+  font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
 }
 
-.encounter-rarity {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 4px;
+/* 底部操作快捷列（參照截圖） */
+.hud-footer {
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+  margin-bottom: 4px;
 }
 
-.rarity-rare { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
-.rarity-legend { background: rgba(249, 202, 36, 0.25); color: #f9ca24; border: 1px solid #f9ca24; }
+.control-hints {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 24px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+}
 
-/* ================== 調酒工作台 MODAL ================== */
+.hint-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #dcdde1;
+}
+
+.key-cap {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.8rem;
+}
+
+.hint-sep {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ================== 左下角虛擬搖桿 (Joystick) ================== */
+.joystick-container {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 120px;
+  height: 120px;
+  pointer-events: auto;
+  z-index: 20;
+  touch-action: none;
+}
+
+.joystick-base {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(16, 22, 40, 0.8) 0%, rgba(8, 10, 20, 0.9) 100%);
+  border: 2px solid rgba(0, 210, 211, 0.45);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 210, 211, 0.25), inset 0 0 15px rgba(0, 210, 211, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.joystick-stick {
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, #54a0ff 0%, #2e86de 100%);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(84, 160, 255, 0.8);
+  position: absolute;
+  pointer-events: none;
+  transform: translate(0px, 0px);
+  transition: box-shadow 0.15s ease;
+}
+
+.joystick-directions {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}
+
+.joy-dir { position: absolute; }
+.dir-up { top: 6px; left: 50%; transform: translateX(-50%); }
+.dir-down { bottom: 6px; left: 50%; transform: translateX(-50%); }
+.dir-left { left: 6px; top: 50%; transform: translateY(-50%); }
+.dir-right { right: 6px; top: 50%; transform: translateY(-50%); }
+
+/* ================== 右下角快捷觸控按鈕群 ================== */
+.touch-actions-group {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  pointer-events: auto;
+  z-index: 20;
+}
+
+.touch-circle-btn {
+  border-radius: 50%;
+  border: 2px solid var(--panel-border);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  transition: all 0.12s ease;
+  touch-action: manipulation;
+}
+
+.touch-circle-btn:active {
+  transform: scale(0.92);
+}
+
+.sprint-btn {
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, #341f97 0%, #1e134b 100%);
+  border-color: var(--magic);
+}
+
+.sprint-btn:active,
+.sprint-btn.active {
+  box-shadow: 0 0 20px var(--magic-glow);
+  border-color: #fff;
+}
+
+.interact-btn {
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #10ac84 0%, #065241 100%);
+  border-color: #2ecc71;
+  box-shadow: 0 0 24px rgba(46, 204, 113, 0.4);
+}
+
+.interact-btn:active {
+  box-shadow: 0 0 30px rgba(46, 204, 113, 0.8);
+}
+
+.btn-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.btn-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+/* ================== 彈出視窗（市集、調酒台、結算、圖鑑） ================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(4, 6, 12, 0.85);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  transition: opacity var(--transition-normal);
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
 }
 
 .modal-backdrop.hidden {
@@ -767,8 +520,8 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  border-radius: var(--radius-lg);
+  padding: 22px;
+  border-radius: 18px;
   position: relative;
 }
 
@@ -776,54 +529,208 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .modal-title {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.modal-icon {
-  font-size: 1.4rem;
+  font-family: var(--font-title);
+  color: var(--gold);
 }
 
 .close-btn {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-size: 1.8rem;
   cursor: pointer;
   line-height: 1;
 }
 
-.close-btn:hover {
-  color: #fff;
+.close-btn:hover { color: #fff; }
+
+.modal-intro {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
 }
 
+/* 市集彈窗列表 */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.market-card {
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--panel-border-subtle);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.market-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+}
+
+.market-card-top {
+  display: flex;
+  gap: 10px;
+}
+
+.market-card-icon {
+  font-size: 2rem;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.market-card-info h4 {
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.market-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.mtag {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+
+.market-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
+.buy-action-btn {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.buy-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 調酒台顧客點單橫幅 */
+.customer-order-banner {
+  padding: 12px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+  background: rgba(20, 24, 40, 0.85);
+}
+
+.cust-order-avatar {
+  font-size: 2.8rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  border: 1.5px solid var(--magic);
+}
+
+.cust-order-info {
+  flex: 1;
+}
+
+.cust-order-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.cust-order-tag {
+  font-size: 0.72rem;
+  background: var(--magic);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.cust-order-info p {
+  font-size: 0.88rem;
+  color: #e0e0e0;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.order-desires {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.desire-tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.tag-sweet { background: rgba(255, 107, 129, 0.25); color: #ff6b81; border: 1px solid #ff6b81; }
+.tag-sour { background: rgba(254, 202, 87, 0.25); color: #feca57; border: 1px solid #feca57; }
+.tag-spirit { background: rgba(84, 160, 255, 0.25); color: #54a0ff; border: 1px solid #54a0ff; }
+.tag-magic { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
+.tag-spicy { background: rgba(255, 71, 87, 0.25); color: #ff4757; border: 1px solid #ff4757; }
+
+/* 調酒台主體佈局 */
 .bartending-body {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .glass-visualization {
-  flex: 0 0 240px;
+  flex: 0 0 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin: 0 auto;
 }
 
 .glass-frame {
   position: relative;
-  width: 220px;
-  height: 340px;
-  background: rgba(0, 0, 0, 0.3);
+  width: 200px;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.35);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
@@ -832,46 +739,42 @@ body {
 }
 
 #cocktail-canvas {
-  width: 220px;
-  height: 340px;
+  width: 200px;
+  height: 300px;
   display: block;
 }
 
 .glass-capacity-indicator {
   position: absolute;
-  bottom: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  color: #fff;
-  border: 1px solid var(--surface-glass-border);
+  bottom: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .current-flavors-hud {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
 }
 
 .flavor-bar-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
 
-.flavor-bar-item span {
-  width: 42px;
-}
+.flavor-bar-item span { width: 38px; }
 
 .mini-bar {
   flex: 1;
   height: 6px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -879,7 +782,6 @@ body {
 .mini-bar .fill {
   height: 100%;
   width: 0%;
-  background: var(--accent-cyan);
   transition: width 0.15s ease;
 }
 
@@ -891,321 +793,218 @@ body {
 
 .mix-controls {
   flex: 1;
-  min-width: 280px;
+  min-width: 260px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .ctrl-subhead {
-  font-size: 0.95rem;
-  color: var(--text-muted);
+  font-size: 0.88rem;
+  color: var(--text-dim);
 }
 
 .ingredient-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
-  max-height: 230px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  max-height: 200px;
   overflow-y: auto;
-  padding-right: 4px;
 }
 
 .ing-select-card {
-  padding: 10px;
+  padding: 8px;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--surface-glass-border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-border-subtle);
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  transition: all var(--transition-fast);
-}
-
-.ing-select-card:hover {
-  background: rgba(255, 255, 255, 0.08);
+  gap: 3px;
 }
 
 .ing-select-card.selected {
-  border-color: var(--accent-magic);
-  background: rgba(165, 94, 234, 0.18);
-  box-shadow: 0 0 12px var(--accent-magic-glow);
-}
-
-.ing-select-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ing-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.ing-count {
-  font-size: 0.72rem;
-  color: var(--accent-cyan);
-}
-
-.ing-flavors {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  border-color: var(--gold);
+  background: rgba(249, 202, 36, 0.15);
+  box-shadow: 0 0 10px var(--gold-glow);
 }
 
 .pour-action-zone {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
 }
 
 .pour-btn {
-  background: linear-gradient(135deg, #00b4db, #0083b0);
+  background: linear-gradient(135deg, #0984e3, #00cec9);
   border: none;
   color: #fff;
-  padding: 16px 20px;
-  border-radius: var(--radius-md);
-  font-size: 1.1rem;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  gap: 8px;
   touch-action: manipulation;
+  box-shadow: 0 4px 16px rgba(0, 206, 201, 0.4);
 }
 
-.pour-btn:active:not(:disabled),
+.pour-btn:active,
 .pour-btn.pouring {
   transform: scale(0.97);
-  box-shadow: 0 0 24px rgba(0, 180, 219, 0.8);
-  background: linear-gradient(135deg, #00d2d3, #54a0ff);
+  box-shadow: 0 0 24px rgba(0, 206, 201, 0.8);
 }
 
 .pour-btn:disabled {
-  background: #2f3640;
-  color: #718093;
-  cursor: not-allowed;
+  background: #2d3436;
+  color: #636e72;
   box-shadow: none;
+  cursor: not-allowed;
 }
 
 .pour-tip {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 0.74rem;
+  color: var(--text-dim);
 }
 
 .mix-action-buttons {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-top: auto;
 }
 
-.mix-action-buttons .action-btn {
+.action-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
   flex: 1;
 }
 
-/* ================== 結算彈窗 MODAL ================== */
+.action-btn.glow-primary {
+  background: linear-gradient(135deg, var(--gold), #e67e22);
+  color: #111;
+  box-shadow: 0 4px 14px var(--gold-glow);
+}
+
+.action-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid var(--panel-border-subtle);
+}
+
+/* 結算面板 */
 .result-box {
-  max-width: 520px;
+  max-width: 500px;
   text-align: center;
-  gap: 18px;
 }
 
-.fanfare-icon {
-  font-size: 2.6rem;
-  display: block;
-  margin-bottom: 6px;
-  animation: bounce 0.6s ease;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
+.fanfare-icon { font-size: 2.6rem; display: block; margin-bottom: 6px; }
 
 #res-drink-name {
-  font-family: var(--font-display);
-  font-size: 1.7rem;
-  color: #fff;
-  background: linear-gradient(135deg, #f9ca24, #f0932b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: var(--font-title);
+  color: var(--gold);
+  font-size: 1.6rem;
   margin-bottom: 4px;
 }
 
 .drink-tier-badge {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   background: rgba(249, 202, 36, 0.2);
-  color: var(--accent-gold);
-  border: 1px solid var(--accent-gold);
-  padding: 3px 12px;
-  border-radius: 12px;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 2px 10px;
+  border-radius: 10px;
   font-weight: 700;
 }
 
 .rating-breakdown {
   display: flex;
   justify-content: space-around;
-  margin: 16px 0;
-  padding: 12px;
+  margin: 14px 0;
+  padding: 10px;
   background: rgba(0, 0, 0, 0.35);
-  border-radius: var(--radius-sm);
-}
-
-.rating-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.r-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.star-rating {
-  font-size: 0.95rem;
+  border-radius: 8px;
 }
 
 .npc-comment-bubble {
-  padding: 14px;
+  padding: 12px;
   display: flex;
   gap: 12px;
   align-items: center;
   text-align: left;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .npc-avatar-small {
   font-size: 2rem;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--accent-magic);
-}
-
-.npc-comment-text strong {
-  display: block;
-  font-size: 0.88rem;
-  color: var(--accent-magic);
-  margin-bottom: 2px;
-}
-
-.npc-comment-text p {
-  font-size: 0.9rem;
-  color: #dcdde1;
-  line-height: 1.4;
+  border: 1px solid var(--magic);
 }
 
 .rewards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
 .reward-card {
-  padding: 12px 8px;
+  padding: 10px 6px;
   background: rgba(0, 0, 0, 0.45);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  border: 1px solid var(--surface-glass-border);
+  border: 1px solid var(--panel-border-subtle);
 }
 
-.rw-icon { font-size: 1.3rem; }
-.rw-val { font-size: 1.15rem; font-weight: 800; color: #fff; }
-.rw-desc { font-size: 0.7rem; color: var(--text-muted); }
+.rw-val { font-size: 1.1rem; font-weight: 800; color: #fff; }
+.reward-card.gold .rw-val { color: var(--gold); }
+.reward-card.rep .rw-val { color: var(--magic); }
+.reward-card.pts .rw-val { color: var(--cyan); }
+.rw-desc { font-size: 0.68rem; color: var(--text-dim); }
 
-.reward-card.gold .rw-val { color: var(--accent-gold); }
-.reward-card.rep .rw-val { color: var(--accent-magic); }
-.reward-card.pts .rw-val { color: var(--accent-cyan); }
+.full-width { width: 100%; }
 
-.full-width {
-  width: 100%;
-}
-
-/* ================== 圖鑑彈窗 ================== */
-.book-box {
-  max-width: 650px;
-}
-
-.book-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-
+/* 圖鑑彈窗 */
+.book-box { max-width: 620px; }
 .recipe-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
 }
 
 .recipe-card {
-  padding: 14px;
+  padding: 12px;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--surface-glass-border);
-  border-radius: var(--radius-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  border: 1px solid var(--panel-border-subtle);
+  border-radius: 8px;
 }
 
-.recipe-card.locked {
-  opacity: 0.45;
-  filter: grayscale(0.8);
-}
+.recipe-card.locked { opacity: 0.45; filter: grayscale(0.8); }
 
-.recipe-card-name {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.recipe-card-tags {
-  font-size: 0.72rem;
-  color: var(--accent-magic);
-}
-
-/* ================== 手機端 RWD 響應式微調 ================== */
+/* ================== RWD 螢幕適配微調 ================== */
 @media (max-width: 768px) {
-  .game-header {
-    padding: 10px 12px;
-  }
-  .brand-title {
-    font-size: 1rem;
-  }
-  .stat-pill {
-    padding: 4px 8px;
-    font-size: 0.78rem;
-  }
-  .zone-screen {
-    padding: 16px 12px;
-  }
-  .customer-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 14px;
-  }
-  .customer-actions {
-    margin-top: 8px;
-  }
-  .bartending-body {
-    flex-direction: column;
-  }
-  .glass-visualization {
-    flex: auto;
-    width: 100%;
-  }
+  .control-hints { display: none; } /* 手機端隱藏底部鍵盤字體，保留搖桿與右下大按鈕 */
+  .hud-header { flex-wrap: wrap; gap: 8px; }
+  .economy-hud { padding: 4px 12px; gap: 8px; }
+  .stat-badge { font-size: 0.8rem; }
+  .joystick-container { bottom: 16px; left: 16px; width: 105px; height: 105px; }
+  .touch-actions-group { bottom: 16px; right: 16px; gap: 10px; }
+  .interact-btn { width: 70px; height: 70px; }
+  .sprint-btn { width: 52px; height: 52px; }
+  .bartending-body { flex-direction: column; }
 }

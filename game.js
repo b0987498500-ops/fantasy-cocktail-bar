@@ -1,9 +1,10 @@
 /**
- * 奇幻調酒館 (Fantasy Bartender) - 核心遊戲引擎
- * 涵蓋：三元經濟、探索防迷路邊界、Canvas 液體分層調酒、顧客 AI 與圖鑑
+ * 奇幻調酒館 (Fantasy Bartender) - 2D 俯視自由走動冒險引擎
+ * 支援：WASD / 滑鼠點航 / 虛擬搖桿、三區無縫大地圖、鏡頭平滑跟隨、迷霧防迷路機制、
+ * 調酒工作台 Canvas 液體分層渲染、NPC 互動與三元經濟閉環。
  */
 
-// ==================== 1. 資料定義 ====================
+// ==================== 1. 原料與資料定義 ====================
 
 const INGREDIENTS = {
   moon_syrup: {
@@ -14,7 +15,7 @@ const INGREDIENTS = {
     repReq: 0,
     color: '#f6e58d',
     flavors: { sweet: 3, sour: 0, spirit: 0, magic: 1, spicy: 0 },
-    desc: '採集自月圓之夜的甘露，入口溫潤綿長。'
+    desc: '月圓之夜採集的甘露，入口溫潤綿長。'
   },
   dawn_water: {
     id: 'dawn_water',
@@ -34,7 +35,7 @@ const INGREDIENTS = {
     repReq: 0,
     color: '#e056fd',
     flavors: { sweet: 0, sour: 0, spirit: 3, magic: 1, spicy: 1 },
-    desc: '蘊含地下熔岩熱力的烈酒，微醺而狂野。'
+    desc: '蘊含地下熔岩熱力的烈酒，微醺狂野。'
   },
   star_fruit: {
     id: 'star_fruit',
@@ -54,7 +55,7 @@ const INGREDIENTS = {
     repReq: 25,
     color: '#686de0',
     flavors: { sweet: 0, sour: 3, spirit: 1, magic: 1, spicy: 0 },
-    desc: '極北冰原的薄荷霜凝，帶來沁涼透骨之感。'
+    desc: '極北冰原的薄荷霜凝，沁涼透骨。'
   },
   dragon_chili: {
     id: 'dragon_chili',
@@ -64,9 +65,8 @@ const INGREDIENTS = {
     repReq: 40,
     color: '#ff4757',
     flavors: { sweet: 0, sour: 0, spirit: 2, magic: 1, spicy: 4 },
-    desc: '幼龍吐息烤炙的辣椒，在喉中引爆辛香狂潮。'
+    desc: '幼龍吐息烤炙的辣椒，在喉中引爆辛香。'
   },
-  // 森林專屬原料
   glowing_shroom: {
     id: 'glowing_shroom',
     name: '夜光幽魂菇',
@@ -159,16 +159,28 @@ const RECIPES_CATALOG = [
   { name: '冒險家特飲', requirement: '任一混調出品之基礎特飲', tags: '常規 / 家常', icon: '🍹' }
 ];
 
-// ==================== 2. 遊戲狀態 ====================
+// ==================== 2. 世界常數與地圖規格 ====================
+
+const WORLD_WIDTH = 3600;
+const WORLD_HEIGHT = 1000;
+
+// 區域邊界
+const ZONE_MARKET_MAX_X = 1150;
+const ZONE_TAVERN_MAX_X = 2350;
+// 森林防迷路閾值
+const FOREST_START_X = 2350;
+const FOREST_WARN_X = 2800;
+const FOREST_DANGER_X = 3200;
+const FOREST_LOST_X = 3550;
+
+// ==================== 3. 遊戲狀態 ====================
 
 class GameState {
   constructor() {
     this.gold = 160;
-    this.reputation = 15;
+    this.reputation = 20;
     this.points = 0;
-    this.currentZone = 'tavern'; // market, tavern, forest
-    
-    // 玩家背包庫存
+
     this.inventory = {
       moon_syrup: 4,
       dawn_water: 5,
@@ -181,87 +193,147 @@ class GameState {
       phoenix_ember: 0
     };
 
-    // 森林探索狀態
-    this.forestDistance = 0;
-    this.forestMaxSafe = 100;
-    this.forestMaxDanger = 150;
-    this.forestLimit = 200;
+    // 森林單次探索採集記錄（防迷路遺失用）
     this.collectedInCurrentRun = {};
-    this.heartbeatInterval = null;
+    this.heartbeatTimer = null;
 
-    // 當前顧客
+    // 顧客與酒譜
     this.currentCustomerIndex = 0;
+    this.unlockedRecipes = new Set(['冒險家特飲']);
 
-    // 調酒杯當前狀態
-    this.glassCapacity = 100; // ml
-    this.glassLayers = []; // [{ id, color, amount, flavors }]
+    // 調酒台
+    this.glassCapacity = 100;
+    this.glassLayers = [];
     this.selectedIngredient = null;
     this.isPouring = false;
     this.pourTimer = null;
 
-    // 解鎖圖鑑
-    this.unlockedRecipes = new Set(['冒險家特飲']);
+    // 主角狀態
+    this.player = {
+      x: 1750, // 初始在酒吧中央
+      y: 550,
+      radius: 20,
+      speed: 3.6,
+      sprintSpeed: 6.2,
+      isSprinting: false,
+      angle: 0,
+      walkAnimTime: 0,
+      targetX: null,
+      targetY: null
+    };
+
+    // 鏡頭
+    this.camera = { x: 0, y: 0 };
+
+    // 輸入狀態
+    this.keys = {
+      w: false, a: false, s: false, d: false,
+      ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false,
+      Shift: false, j: false, ' ': false
+    };
+
+    // 虛擬搖桿輸入向量
+    this.joystickVector = { x: 0, y: 0 };
+
+    // 最近可交互物件
+    this.activeInteractable = null;
   }
 }
 
 const game = new GameState();
 
-// ==================== 3. DOM 元素快取 ====================
+// ==================== 4. 地圖實體（建築、NPC、採集點、裝飾） ====================
+
+const mapEntities = {
+  // 市集店鋪
+  marketStalls: [
+    { id: 'stall_syrup', name: '星光調飲原料行', icon: '🏪', x: 450, y: 380, width: 140, height: 100, interactType: 'market' },
+    { id: 'stall_magic', name: '鍊金奇物雜貨鋪', icon: '🔮', x: 800, y: 380, width: 140, height: 100, interactType: 'market' }
+  ],
+  // 酒吧核心實體
+  tavernItems: [
+    { id: 'bar_counter', name: '調酒操作吧台', icon: '🍸', x: 1750, y: 360, width: 220, height: 70, interactType: 'bartender' },
+    { id: 'customer_seat', name: '顧客席', icon: '🧝‍♀️', x: 1750, y: 440, radius: 24, interactType: 'bartender' }
+  ],
+  // 森林採集點與寶箱（動態分佈）
+  gatherNodes: [
+    { id: 'g_shroom_1', type: 'item', itemId: 'glowing_shroom', name: '夜光幽魂菇', icon: '🍄', x: 2600, y: 400, radius: 20, gathered: false },
+    { id: 'g_tear_1', type: 'item', itemId: 'fairy_tear', name: '妖精之淚靈泉', icon: '💎', x: 2850, y: 650, radius: 20, gathered: false },
+    { id: 'g_chest_1', type: 'chest', gold: 50, name: '林間遠古寶箱', icon: '🎁', x: 3100, y: 350, radius: 22, gathered: false },
+    { id: 'g_chili_1', type: 'item', itemId: 'dragon_chili', name: '赤焰辣椒叢', icon: '🌶️', x: 3350, y: 600, radius: 20, gathered: false },
+    { id: 'g_chest_2', type: 'chest', gold: 80, name: '迷霧深處密寶', icon: '🎁', x: 3480, y: 450, radius: 22, gathered: false }
+  ],
+  // 路燈
+  streetLights: [
+    { x: 300, y: 550 }, { x: 600, y: 550 }, { x: 950, y: 550 },
+    { x: 1350, y: 550 }, { x: 1750, y: 580 }, { x: 2150, y: 550 },
+    { x: 2500, y: 550 }, { x: 2800, y: 550 }, { x: 3100, y: 550 }
+  ],
+  // 環境奇幻螢火蟲
+  fireflies: Array.from({ length: 45 }, () => ({
+    x: Math.random() * WORLD_WIDTH,
+    y: Math.random() * WORLD_HEIGHT,
+    size: 1.5 + Math.random() * 2.5,
+    speedX: (Math.random() - 0.5) * 0.8,
+    speedY: (Math.random() - 0.5) * 0.8,
+    glow: Math.random() * Math.PI * 2
+  }))
+};
+
+// ==================== 5. DOM 元素快取 ====================
 
 const DOM = {
-  // 數值顯示
+  worldCanvas: document.getElementById('world-canvas'),
+  minimapCanvas: document.getElementById('minimap-canvas'),
+  currentZoneName: document.getElementById('current-zone-name'),
   goldDisplay: document.getElementById('gold-display'),
   repDisplay: document.getElementById('rep-display'),
   pointsDisplay: document.getElementById('points-display'),
   audioToggleBtn: document.getElementById('audio-toggle-btn'),
   recipeBookBtn: document.getElementById('recipe-book-btn'),
 
-  // 區域視圖與按鈕
-  navMarket: document.getElementById('nav-market'),
-  navTavern: document.getElementById('nav-tavern'),
-  navForest: document.getElementById('nav-forest'),
-  zoneMarket: document.getElementById('zone-market'),
-  zoneTavern: document.getElementById('zone-tavern'),
-  zoneForest: document.getElementById('zone-forest'),
-
-  // 市集
-  marketShelves: document.getElementById('market-shelves'),
-
-  // 酒吧台
-  custAvatar: document.getElementById('cust-avatar'),
-  custBadge: document.getElementById('cust-badge'),
-  custDialogText: document.getElementById('cust-dialog-text'),
-  custDesires: document.getElementById('cust-desires'),
-  openBartenderBtn: document.getElementById('open-bartender-btn'),
-  barInvChips: document.getElementById('bar-inv-chips'),
-
-  // 森林
-  forestDistance: document.getElementById('forest-distance'),
-  dangerLevel: document.getElementById('danger-level'),
-  gaugeFill: document.getElementById('gauge-fill'),
-  btnExploreForward: document.getElementById('btn-explore-forward'),
-  btnExploreBack: document.getElementById('btn-explore-back'),
-  btnEmergencyReturn: document.getElementById('btn-emergency-return'),
-  forestEncounters: document.getElementById('forest-encounters'),
-  mistOverlay: document.getElementById('mist-overlay'),
+  mistVignette: document.getElementById('mist-vignette'),
   lostAlertBanner: document.getElementById('lost-alert-banner'),
+  forestDangerHud: document.getElementById('forest-danger-hud'),
+  dangerMeterFill: document.getElementById('danger-meter-fill'),
+  dangerDistText: document.getElementById('danger-dist-text'),
+  dangerStatusBadge: document.getElementById('danger-status-badge'),
+  proximityPrompt: document.getElementById('proximity-prompt'),
+  promptActionText: document.getElementById('prompt-action-text'),
 
-  // 調酒工作台
+  // 觸控虛擬搖桿
+  joystickZone: document.getElementById('joystick-zone'),
+  joystickBase: document.getElementById('joystick-base'),
+  joystickStick: document.getElementById('joystick-stick'),
+  touchSprintBtn: document.getElementById('touch-sprint-btn'),
+  touchInteractBtn: document.getElementById('touch-interact-btn'),
+
+  // 模態彈窗
+  marketModal: document.getElementById('market-modal'),
+  closeMarketBtn: document.getElementById('close-market-btn'),
+  marketGrid: document.getElementById('market-grid'),
+
   bartenderModal: document.getElementById('bartender-modal'),
   closeBartenderBtn: document.getElementById('close-bartender-btn'),
+  orderCustAvatar: document.getElementById('order-cust-avatar'),
+  orderCustName: document.getElementById('order-cust-name'),
+  orderCustBadge: document.getElementById('order-cust-badge'),
+  orderCustQuote: document.getElementById('order-cust-quote'),
+  orderCustDesires: document.getElementById('order-cust-desires'),
+
   cocktailCanvas: document.getElementById('cocktail-canvas'),
   glassVolumeText: document.getElementById('glass-volume-text'),
   ingredientGrid: document.getElementById('ingredient-grid'),
   pourBtn: document.getElementById('pour-btn'),
   resetDrinkBtn: document.getElementById('reset-drink-btn'),
   finishDrinkBtn: document.getElementById('finish-drink-btn'),
+
   hudSweet: document.getElementById('hud-sweet'),
   hudSour: document.getElementById('hud-sour'),
   hudSpirit: document.getElementById('hud-spirit'),
   hudMagic: document.getElementById('hud-magic'),
   hudSpicy: document.getElementById('hud-spicy'),
 
-  // 結算彈窗
   resultModal: document.getElementById('result-modal'),
   resDrinkName: document.getElementById('res-drink-name'),
   resDrinkTier: document.getElementById('res-drink-tier'),
@@ -276,365 +348,838 @@ const DOM = {
   resEarnPts: document.getElementById('res-earn-pts'),
   confirmResultBtn: document.getElementById('confirm-result-btn'),
 
-  // 圖鑑彈窗
   recipeBookModal: document.getElementById('recipe-book-modal'),
   closeBookBtn: document.getElementById('close-book-btn'),
   recipeGrid: document.getElementById('recipe-grid')
 };
 
-// ==================== 4. 基礎更新與 UI 渲染 ====================
+const worldCtx = DOM.worldCanvas.getContext('2d');
+const minimapCtx = DOM.minimapCanvas.getContext('2d');
+const cocktailCtx = DOM.cocktailCanvas.getContext('2d');
+
+// ==================== 6. 視窗尺寸自適應 ====================
+
+function resizeCanvases() {
+  DOM.worldCanvas.width = window.innerWidth;
+  DOM.worldCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvases);
+resizeCanvases();
+
+// ==================== 7. 輸入系統（鍵盤、滑鼠點擊、虛擬搖桿） ====================
+
+window.addEventListener('keydown', (e) => {
+  if (game.keys.hasOwnProperty(e.key)) {
+    game.keys[e.key] = true;
+  }
+  if (e.key === 'j' || e.key === 'J' || e.key === 'Shift') {
+    game.player.isSprinting = true;
+  }
+  if (e.key === ' ' || e.code === 'Space') {
+    e.preventDefault();
+    triggerActiveInteraction();
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (game.keys.hasOwnProperty(e.key)) {
+    game.keys[e.key] = false;
+  }
+  if (!game.keys.j && !game.keys.Shift) {
+    game.player.isSprinting = false;
+  }
+});
+
+// 滑鼠點擊地面導航移動
+DOM.worldCanvas.addEventListener('click', (e) => {
+  // 若點擊的是 UI 彈窗則不干擾
+  if (isAnyModalOpen()) return;
+
+  const rect = DOM.worldCanvas.getBoundingClientRect();
+  const clickScreenX = e.clientX - rect.left;
+  const clickScreenY = e.clientY - rect.top;
+
+  // 轉換成世界座標
+  game.player.targetX = clickScreenX + game.camera.x;
+  game.player.targetY = clickScreenY + game.camera.y;
+});
+
+// 虛擬搖桿拖拽事件
+let joystickActive = false;
+let joystickCenter = { x: 0, y: 0 };
+const maxJoystickRadius = 40;
+
+function handleJoystickStart(clientX, clientY) {
+  joystickActive = true;
+  const rect = DOM.joystickBase.getBoundingClientRect();
+  joystickCenter = {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+  };
+  handleJoystickMove(clientX, clientY);
+}
+
+function handleJoystickMove(clientX, clientY) {
+  if (!joystickActive) return;
+
+  const dx = clientX - joystickCenter.x;
+  const dy = clientY - joystickCenter.y;
+  const dist = Math.hypot(dx, dy);
+
+  let clampDist = Math.min(dist, maxJoystickRadius);
+  let angle = Math.atan2(dy, dx);
+
+  const stickX = Math.cos(angle) * clampDist;
+  const stickY = Math.sin(angle) * clampDist;
+
+  DOM.joystickStick.style.transform = `translate(${stickX}px, ${stickY}px)`;
+
+  // 歸一化輸出向量
+  game.joystickVector.x = stickX / maxJoystickRadius;
+  game.joystickVector.y = stickY / maxJoystickRadius;
+
+  // 搖桿移動時取消滑鼠點擊目標
+  game.player.targetX = null;
+  game.player.targetY = null;
+}
+
+function handleJoystickEnd() {
+  joystickActive = false;
+  DOM.joystickStick.style.transform = `translate(0px, 0px)`;
+  game.joystickVector.x = 0;
+  game.joystickVector.y = 0;
+}
+
+DOM.joystickZone.addEventListener('mousedown', (e) => handleJoystickStart(e.clientX, e.clientY));
+window.addEventListener('mousemove', (e) => { if (joystickActive) handleJoystickMove(e.clientX, e.clientY); });
+window.addEventListener('mouseup', handleJoystickEnd);
+
+DOM.joystickZone.addEventListener('touchstart', (e) => {
+  if (e.touches.length > 0) handleJoystickStart(e.touches[0].clientX, e.touches[0].clientY);
+});
+window.addEventListener('touchmove', (e) => {
+  if (joystickActive && e.touches.length > 0) handleJoystickMove(e.touches[0].clientX, e.touches[0].clientY);
+});
+window.addEventListener('touchend', handleJoystickEnd);
+window.addEventListener('touchcancel', handleJoystickEnd);
+
+// 右下角觸控按鈕
+DOM.touchSprintBtn.addEventListener('click', () => {
+  game.player.isSprinting = !game.player.isSprinting;
+  DOM.touchSprintBtn.classList.toggle('active', game.player.isSprinting);
+});
+
+DOM.touchInteractBtn.addEventListener('click', () => {
+  triggerActiveInteraction();
+});
+
+function isAnyModalOpen() {
+  return !DOM.marketModal.classList.contains('hidden') ||
+         !DOM.bartenderModal.classList.contains('hidden') ||
+         !DOM.resultModal.classList.contains('hidden') ||
+         !DOM.recipeBookModal.classList.contains('hidden');
+}
+
+// ==================== 8. 物理更新與鏡頭跟隨 ====================
+
+function updatePlayer() {
+  if (isAnyModalOpen()) return;
+
+  let moveX = 0;
+  let moveY = 0;
+
+  // 1. 鍵盤輸入
+  if (game.keys.w || game.keys.ArrowUp) moveY -= 1;
+  if (game.keys.s || game.keys.ArrowDown) moveY += 1;
+  if (game.keys.a || game.keys.ArrowLeft) moveX -= 1;
+  if (game.keys.d || game.keys.ArrowRight) moveX += 1;
+
+  // 2. 搖桿輸入覆蓋
+  if (Math.hypot(game.joystickVector.x, game.joystickVector.y) > 0.1) {
+    moveX = game.joystickVector.x;
+    moveY = game.joystickVector.y;
+  }
+
+  // 3. 滑鼠尋路導航
+  if (game.player.targetX !== null && game.player.targetY !== null && moveX === 0 && moveY === 0) {
+    const tdx = game.player.targetX - game.player.x;
+    const tdy = game.player.targetY - game.player.y;
+    const tdist = Math.hypot(tdx, tdy);
+
+    if (tdist > 8) {
+      moveX = tdx / tdist;
+      moveY = tdy / tdist;
+    } else {
+      game.player.targetX = null;
+      game.player.targetY = null;
+    }
+  }
+
+  // 計算實際速度
+  const curSpeed = game.player.isSprinting ? game.player.sprintSpeed : game.player.speed;
+  const moveMag = Math.hypot(moveX, moveY);
+
+  if (moveMag > 0.05) {
+    const nx = moveX / (moveMag > 1 ? moveMag : 1);
+    const ny = moveY / (moveMag > 1 ? moveMag : 1);
+
+    game.player.x += nx * curSpeed;
+    game.player.y += ny * curSpeed;
+    game.player.angle = Math.atan2(ny, nx);
+    game.player.walkAnimTime += 0.18;
+  }
+
+  // 世界邊界拘束
+  game.player.x = Math.max(game.player.radius, Math.min(WORLD_WIDTH - game.player.radius, game.player.x));
+  game.player.y = Math.max(120, Math.min(WORLD_HEIGHT - 80, game.player.y));
+
+  // 鏡頭平滑居中跟隨
+  const targetCamX = game.player.x - DOM.worldCanvas.width / 2;
+  const targetCamY = game.player.y - DOM.worldCanvas.height / 2;
+  game.camera.x += (targetCamX - game.camera.x) * 0.1;
+  game.camera.y += (targetCamY - game.camera.y) * 0.1;
+
+  // 限制鏡頭邊界
+  const maxCamX = Math.max(0, WORLD_WIDTH - DOM.worldCanvas.width);
+  const maxCamY = Math.max(0, WORLD_HEIGHT - DOM.worldCanvas.height);
+  game.camera.x = Math.max(0, Math.min(maxCamX, game.camera.x));
+  game.camera.y = Math.max(0, Math.min(maxCamY, game.camera.y));
+
+  // 更新當前區域標籤
+  updateZoneTag();
+
+  // 檢測森林防迷路機制
+  updateForestFogMechanic();
+
+  // 檢測身邊最近可交互實體
+  detectNearbyInteractables();
+}
+
+// 區域名稱提示
+function updateZoneTag() {
+  if (game.player.x < ZONE_MARKET_MAX_X) {
+    DOM.currentZoneName.textContent = '🛒 星光市集・熱鬧大街';
+    DOM.forestDangerHud.classList.add('hidden');
+  } else if (game.player.x < ZONE_TAVERN_MAX_X) {
+    DOM.currentZoneName.textContent = '🏠 奇幻酒吧・主營業廳';
+    DOM.forestDangerHud.classList.add('hidden');
+  } else {
+    DOM.currentZoneName.textContent = '🌲 神祕迷霧森林';
+    DOM.forestDangerHud.classList.remove('hidden');
+  }
+}
+
+// 森林防迷路心跳與迷霧收窄機制
+function updateForestFogMechanic() {
+  if (game.player.x <= FOREST_START_X) {
+    DOM.mistVignette.style.opacity = '0';
+    DOM.mistVignette.classList.remove('danger', 'extreme');
+    stopHeartbeat();
+    return;
+  }
+
+  const distInForest = game.player.x - FOREST_START_X;
+  const maxForestDist = FOREST_LOST_X - FOREST_START_X;
+  const progress = Math.min(100, Math.round((distInForest / maxForestDist) * 100));
+
+  DOM.dangerDistText.textContent = `${Math.round(distInForest / 5)}m`;
+  DOM.dangerMeterFill.style.width = `${progress}%`;
+
+  if (game.player.x < FOREST_WARN_X) {
+    DOM.dangerStatusBadge.textContent = '安全探索';
+    DOM.dangerStatusBadge.className = 'badge-safe';
+    DOM.mistVignette.style.opacity = `${(distInForest / (FOREST_WARN_X - FOREST_START_X)) * 0.4}`;
+    DOM.mistVignette.classList.remove('danger', 'extreme');
+    stopHeartbeat();
+  } else if (game.player.x < FOREST_DANGER_X) {
+    DOM.dangerStatusBadge.textContent = '起霧警戒！';
+    DOM.dangerStatusBadge.className = 'badge-warning';
+    DOM.mistVignette.classList.add('danger');
+    DOM.mistVignette.classList.remove('extreme');
+    startHeartbeat(2000, 0.35);
+  } else if (game.player.x < FOREST_LOST_X) {
+    DOM.dangerStatusBadge.textContent = '⚠️ 極度危險！即將迷失';
+    DOM.dangerStatusBadge.className = 'badge-danger';
+    DOM.mistVignette.classList.remove('danger');
+    DOM.mistVignette.classList.add('extreme');
+    startHeartbeat(1000, 0.7);
+  } else {
+    // 超越極限邊界 ➜ 觸發迷失強制遣返
+    triggerLostMechanic();
+  }
+}
+
+function startHeartbeat(intervalMs, vol) {
+  if (game.heartbeatTimer) return;
+  game.heartbeatTimer = setInterval(() => {
+    window.soundEngine.playHeartbeat(vol);
+  }, intervalMs);
+}
+
+function stopHeartbeat() {
+  if (game.heartbeatTimer) {
+    clearInterval(game.heartbeatTimer);
+    game.heartbeatTimer = null;
+  }
+}
+
+function triggerLostMechanic() {
+  stopHeartbeat();
+  window.soundEngine.playLostSound();
+  DOM.lostAlertBanner.classList.add('show');
+
+  // 遺失本次在森林採集之 50% 物品
+  Object.keys(game.collectedInCurrentRun).forEach(id => {
+    const lostCount = Math.ceil(game.collectedInCurrentRun[id] / 2);
+    game.inventory[id] = Math.max(0, (game.inventory[id] || 0) - lostCount);
+  });
+  game.collectedInCurrentRun = {};
+
+  // 強制瞬移回酒吧吧台前
+  game.player.x = 1750;
+  game.player.y = 520;
+  game.player.targetX = null;
+  game.player.targetY = null;
+
+  updateResourceDisplays();
+
+  setTimeout(() => {
+    DOM.lostAlertBanner.classList.remove('show');
+  }, 3600);
+}
+
+// 檢測身邊最近的可互動實體
+function detectNearbyInteractables() {
+  let closest = null;
+  let minDist = 75; // 觸發距離閾值
+
+  // 1. 檢測市集店鋪
+  mapEntities.marketStalls.forEach(stall => {
+    const cx = stall.x + stall.width / 2;
+    const cy = stall.y + stall.height / 2;
+    const d = Math.hypot(game.player.x - cx, game.player.y - cy);
+    if (d < minDist + 20 && d < minDist) {
+      minDist = d;
+      closest = { type: 'market', name: stall.name, x: cx, y: stall.y - 15, prompt: '🛒 進入市集商販' };
+    }
+  });
+
+  // 2. 檢測酒吧調酒台與顧客席
+  const custSeat = mapEntities.tavernItems.find(i => i.id === 'customer_seat');
+  if (custSeat) {
+    const d = Math.hypot(game.player.x - custSeat.x, game.player.y - custSeat.y);
+    if (d < minDist + 15) {
+      minDist = d;
+      const cust = CUSTOMERS[game.currentCustomerIndex];
+      closest = { type: 'bartender', name: cust.name, x: custSeat.x, y: custSeat.y - 35, prompt: `✨ 招待 ${cust.name}（調酒）` };
+    }
+  }
+
+  // 3. 檢測森林採集點與寶箱
+  mapEntities.gatherNodes.forEach(node => {
+    if (node.gathered) return;
+    const d = Math.hypot(game.player.x - node.x, game.player.y - node.y);
+    if (d < minDist) {
+      minDist = d;
+      const promptText = node.type === 'chest' ? `🎁 開啟 ${node.name}` : `🌿 採集 ${node.name}`;
+      closest = { type: 'gather', node: node, x: node.x, y: node.y - 25, prompt: promptText };
+    }
+  });
+
+  game.activeInteractable = closest;
+
+  // 更新互動浮標位置與文字
+  if (closest) {
+    const screenX = closest.x - game.camera.x;
+    const screenY = closest.y - game.camera.y;
+
+    DOM.proximityPrompt.style.left = `${screenX}px`;
+    DOM.proximityPrompt.style.top = `${screenY}px`;
+    DOM.promptActionText.textContent = closest.prompt;
+    DOM.proximityPrompt.classList.remove('hidden');
+  } else {
+    DOM.proximityPrompt.classList.add('hidden');
+  }
+}
+
+// 觸發目前鎖定的交互
+function triggerActiveInteraction() {
+  if (!game.activeInteractable) return;
+
+  const target = game.activeInteractable;
+  if (target.type === 'market') {
+    openMarketModal();
+  } else if (target.type === 'bartender') {
+    openBartenderModal();
+  } else if (target.type === 'gather') {
+    const node = target.node;
+    node.gathered = true;
+
+    if (node.type === 'chest') {
+      game.gold += node.gold;
+      game.points += 8;
+      window.soundEngine.playCoinSound();
+    } else {
+      game.inventory[node.itemId] = (game.inventory[node.itemId] || 0) + 1;
+      game.collectedInCurrentRun[node.itemId] = (game.collectedInCurrentRun[node.itemId] || 0) + 1;
+      window.soundEngine.playGatherSound();
+    }
+    updateResourceDisplays();
+    game.activeInteractable = null;
+    DOM.proximityPrompt.classList.add('hidden');
+  }
+}
+
+// ==================== 9. 2D 畫布世界渲染 ====================
+
+function drawWorld() {
+  worldCtx.clearRect(0, 0, DOM.worldCanvas.width, DOM.worldCanvas.height);
+
+  worldCtx.save();
+  worldCtx.translate(-game.camera.x, -game.camera.y);
+
+  // 1. 繪製三區地面底色與紋理
+  drawGround();
+
+  // 2. 繪製道路與路燈光暈
+  drawRoadsAndLighting();
+
+  // 3. 繪製建築與攤位
+  drawStructures();
+
+  // 4. 繪製採集點與寶箱
+  drawGatherNodes();
+
+  // 5. 繪製顧客 NPC
+  drawCustomers();
+
+  // 6. 繪製環境飄動螢火蟲粒子
+  drawFireflies();
+
+  // 7. 繪製調酒師主角
+  drawPlayer();
+
+  worldCtx.restore();
+
+  // 8. 繪製小地圖雷達
+  drawMinimap();
+}
+
+function drawGround() {
+  // 左區：星光市集 (青灰石板地)
+  worldCtx.fillStyle = '#111424';
+  worldCtx.fillRect(0, 0, ZONE_MARKET_MAX_X, WORLD_HEIGHT);
+  // 石板格線微紋理
+  worldCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  worldCtx.lineWidth = 1;
+  for (let x = 0; x < ZONE_MARKET_MAX_X; x += 60) {
+    worldCtx.beginPath();
+    worldCtx.moveTo(x, 0);
+    worldCtx.lineTo(x, WORLD_HEIGHT);
+    worldCtx.stroke();
+  }
+
+  // 中區：奇幻酒吧 (溫暖深木紋地板)
+  worldCtx.fillStyle = '#19152b';
+  worldCtx.fillRect(ZONE_MARKET_MAX_X, 0, ZONE_TAVERN_MAX_X - ZONE_MARKET_MAX_X, WORLD_HEIGHT);
+  // 酒吧地毯
+  worldCtx.fillStyle = 'rgba(165, 94, 234, 0.12)';
+  worldCtx.fillRect(ZONE_MARKET_MAX_X + 100, 260, 1000, 480);
+  worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.3)';
+  worldCtx.strokeRect(ZONE_MARKET_MAX_X + 100, 260, 1000, 480);
+
+  // 右區：神祕森林 (幽暗苔蘚草地)
+  const forestGrad = worldCtx.createLinearGradient(ZONE_TAVERN_MAX_X, 0, WORLD_WIDTH, 0);
+  forestGrad.addColorStop(0, '#0c1b18');
+  forestGrad.addColorStop(0.5, '#071513');
+  forestGrad.addColorStop(1, '#030a08');
+  worldCtx.fillStyle = forestGrad;
+  worldCtx.fillRect(ZONE_TAVERN_MAX_X, 0, WORLD_WIDTH - ZONE_TAVERN_MAX_X, WORLD_HEIGHT);
+
+  // 森林奇幻樹木背景裝飾
+  for (let fx = ZONE_TAVERN_MAX_X + 80; fx < WORLD_WIDTH; fx += 140) {
+    worldCtx.fillStyle = 'rgba(16, 172, 132, 0.15)';
+    worldCtx.beginPath();
+    worldCtx.arc(fx, 180 + ((fx * 13) % 120), 55, 0, Math.PI * 2);
+    worldCtx.fill();
+    worldCtx.beginPath();
+    worldCtx.arc(fx, 820 - ((fx * 7) % 100), 50, 0, Math.PI * 2);
+    worldCtx.fill();
+  }
+}
+
+function drawRoadsAndLighting() {
+  // 貫穿三區的主幹道
+  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  worldCtx.fillRect(0, 500, WORLD_WIDTH, 100);
+  worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.2)';
+  worldCtx.setLineDash([15, 15]);
+  worldCtx.beginPath();
+  worldCtx.moveTo(0, 550);
+  worldCtx.lineTo(WORLD_WIDTH, 550);
+  worldCtx.stroke();
+  worldCtx.setLineDash([]);
+
+  // 路燈與暖光光暈
+  mapEntities.streetLights.forEach(light => {
+    // 燈柱
+    worldCtx.fillStyle = '#2f3640';
+    worldCtx.fillRect(light.x - 3, light.y - 40, 6, 40);
+    // 燈頭
+    worldCtx.fillStyle = '#f9ca24';
+    worldCtx.beginPath();
+    worldCtx.arc(light.x, light.y - 45, 7, 0, Math.PI * 2);
+    worldCtx.fill();
+    // 光暈
+    const radGrad = worldCtx.createRadialGradient(light.x, light.y - 45, 5, light.x, light.y - 45, 65);
+    radGrad.addColorStop(0, 'rgba(249, 202, 36, 0.35)');
+    radGrad.addColorStop(1, 'rgba(249, 202, 36, 0)');
+    worldCtx.fillStyle = radGrad;
+    worldCtx.beginPath();
+    worldCtx.arc(light.x, light.y - 45, 65, 0, Math.PI * 2);
+    worldCtx.fill();
+  });
+}
+
+function drawStructures() {
+  // 市集攤位
+  mapEntities.marketStalls.forEach(stall => {
+    // 陰影
+    worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    worldCtx.fillRect(stall.x + 8, stall.y + 8, stall.width, stall.height);
+
+    // 攤位主體
+    worldCtx.fillStyle = '#222f3e';
+    worldCtx.fillRect(stall.x, stall.y, stall.width, stall.height);
+    worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.6)';
+    worldCtx.lineWidth = 2;
+    worldCtx.strokeRect(stall.x, stall.y, stall.width, stall.height);
+
+    // 屋頂遮陽棚條紋
+    worldCtx.fillStyle = '#e67e22';
+    worldCtx.fillRect(stall.x, stall.y, stall.width, 24);
+
+    // 圖示與招牌
+    worldCtx.font = '28px serif';
+    worldCtx.textAlign = 'center';
+    worldCtx.fillText(stall.icon, stall.x + stall.width / 2, stall.y + 60);
+
+    worldCtx.font = '12px sans-serif';
+    worldCtx.fillStyle = '#fff';
+    worldCtx.fillText(stall.name, stall.x + stall.width / 2, stall.y + 90);
+  });
+
+  // 酒吧核心吧台
+  const counter = mapEntities.tavernItems.find(i => i.id === 'bar_counter');
+  if (counter) {
+    worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    worldCtx.fillRect(counter.x - counter.width / 2 + 6, counter.y + 6, counter.width, counter.height);
+
+    worldCtx.fillStyle = '#4b382a';
+    worldCtx.fillRect(counter.x - counter.width / 2, counter.y, counter.width, counter.height);
+    worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.8)';
+    worldCtx.lineWidth = 2;
+    worldCtx.strokeRect(counter.x - counter.width / 2, counter.y, counter.width, counter.height);
+
+    worldCtx.font = '24px serif';
+    worldCtx.textAlign = 'center';
+    worldCtx.fillText('🍸', counter.x, counter.y + 35);
+
+    worldCtx.font = 'bold 13px sans-serif';
+    worldCtx.fillStyle = '#f9ca24';
+    worldCtx.fillText('★ 奇幻調酒師工作台 ★', counter.x, counter.y + 58);
+  }
+}
+
+function drawGatherNodes() {
+  mapEntities.gatherNodes.forEach(node => {
+    if (node.gathered) return;
+
+    // 發光光暈
+    const grad = worldCtx.createRadialGradient(node.x, node.y, 4, node.x, node.y, 30);
+    grad.addColorStop(0, 'rgba(46, 204, 113, 0.45)');
+    grad.addColorStop(1, 'rgba(46, 204, 113, 0)');
+    worldCtx.fillStyle = grad;
+    worldCtx.beginPath();
+    worldCtx.arc(node.x, node.y, 30, 0, Math.PI * 2);
+    worldCtx.fill();
+
+    // 採集物圖示
+    worldCtx.font = '24px serif';
+    worldCtx.textAlign = 'center';
+    worldCtx.textBaseline = 'middle';
+    worldCtx.fillText(node.icon, node.x, node.y);
+
+    // 浮動小標籤
+    worldCtx.font = '11px sans-serif';
+    worldCtx.fillStyle = '#2ecc71';
+    worldCtx.fillText(node.name, node.x, node.y + 22);
+  });
+}
+
+function drawCustomers() {
+  const custSeat = mapEntities.tavernItems.find(i => i.id === 'customer_seat');
+  if (!custSeat) return;
+
+  const cust = CUSTOMERS[game.currentCustomerIndex];
+
+  // 顧客等待光圈
+  worldCtx.strokeStyle = 'rgba(165, 94, 234, 0.7)';
+  worldCtx.lineWidth = 2;
+  worldCtx.beginPath();
+  worldCtx.arc(custSeat.x, custSeat.y, 28, 0, Math.PI * 2);
+  worldCtx.stroke();
+
+  // 顧客大頭貼圖示
+  worldCtx.font = '32px serif';
+  worldCtx.textAlign = 'center';
+  worldCtx.textBaseline = 'middle';
+  worldCtx.fillText(cust.avatar, custSeat.x, custSeat.y);
+
+  // 顧客名牌
+  worldCtx.font = 'bold 12px sans-serif';
+  worldCtx.fillStyle = '#fff';
+  worldCtx.fillText(cust.name, custSeat.x, custSeat.y - 32);
+
+  // 渴求對話小氣泡
+  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  worldCtx.fillRect(custSeat.x - 70, custSeat.y + 26, 140, 20);
+  worldCtx.fillStyle = '#f9ca24';
+  worldCtx.font = '11px sans-serif';
+  worldCtx.fillText('點酒中・按空白鍵', custSeat.x, custSeat.y + 40);
+}
+
+function drawFireflies() {
+  mapEntities.fireflies.forEach(p => {
+    p.x += p.speedX;
+    p.y += p.speedY;
+    p.glow += 0.05;
+
+    // 螢火蟲邊界回彈
+    if (p.x < 0) p.x = WORLD_WIDTH;
+    if (p.x > WORLD_WIDTH) p.x = 0;
+    if (p.y < 0) p.y = WORLD_HEIGHT;
+    if (p.y > WORLD_HEIGHT) p.y = 0;
+
+    const alpha = 0.3 + Math.sin(p.glow) * 0.3;
+    worldCtx.fillStyle = `rgba(0, 210, 211, ${alpha})`;
+    worldCtx.beginPath();
+    worldCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    worldCtx.fill();
+  });
+}
+
+function drawPlayer() {
+  const p = game.player;
+
+  // 1. 角色腳下發光星辰視野環（比照截圖探查圈）
+  worldCtx.save();
+  worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.65)';
+  worldCtx.lineWidth = 2;
+  worldCtx.setLineDash([6, 4]);
+  worldCtx.beginPath();
+  worldCtx.arc(p.x, p.y, 42, 0, Math.PI * 2);
+  worldCtx.stroke();
+  worldCtx.setLineDash([]);
+
+  // 視野環內淡高光
+  const circleGrad = worldCtx.createRadialGradient(p.x, p.y, 10, p.x, p.y, 42);
+  circleGrad.addColorStop(0, 'rgba(249, 202, 36, 0.18)');
+  circleGrad.addColorStop(1, 'rgba(249, 202, 36, 0)');
+  worldCtx.fillStyle = circleGrad;
+  worldCtx.beginPath();
+  worldCtx.arc(p.x, p.y, 42, 0, Math.PI * 2);
+  worldCtx.fill();
+
+  // 2. 移動方向箭頭指示針
+  const arrowDist = 32;
+  const ax = p.x + Math.cos(p.angle) * arrowDist;
+  const ay = p.y + Math.sin(p.angle) * arrowDist;
+  worldCtx.fillStyle = '#f9ca24';
+  worldCtx.beginPath();
+  worldCtx.arc(ax, ay, 4.5, 0, Math.PI * 2);
+  worldCtx.fill();
+
+  // 3. 調酒師小人身體（帶有行走微彈跳動畫）
+  const bobY = Math.sin(p.walkAnimTime) * 3;
+
+  // 披風陰影
+  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  worldCtx.beginPath();
+  worldCtx.ellipse(p.x, p.y + 16, 16, 8, 0, 0, Math.PI * 2);
+  worldCtx.fill();
+
+  // 魔法燕尾長袍
+  worldCtx.fillStyle = '#1e272e';
+  worldCtx.beginPath();
+  worldCtx.arc(p.x, p.y + bobY, 16, 0, Math.PI * 2);
+  worldCtx.fill();
+  worldCtx.strokeStyle = '#f9ca24';
+  worldCtx.lineWidth = 2;
+  worldCtx.stroke();
+
+  // 禮帽/頭部
+  worldCtx.font = '22px serif';
+  worldCtx.textAlign = 'center';
+  worldCtx.textBaseline = 'middle';
+  worldCtx.fillText('🧙‍♂️', p.x, p.y + bobY - 2);
+
+  // 4. 頭頂名牌標籤（比照截圖「本尊 調酒聖手」）
+  worldCtx.fillStyle = 'rgba(10, 12, 22, 0.85)';
+  worldCtx.strokeStyle = 'rgba(249, 202, 36, 0.5)';
+  worldCtx.lineWidth = 1;
+  worldCtx.fillRect(p.x - 55, p.y - 48, 110, 20);
+  worldCtx.strokeRect(p.x - 55, p.y - 48, 110, 20);
+
+  worldCtx.fillStyle = '#f9ca24';
+  worldCtx.font = 'bold 11px sans-serif';
+  worldCtx.fillText('★ 傳奇調酒師', p.x, p.y - 34);
+
+  worldCtx.restore();
+}
+
+// 繪製左上角小地圖 (Minimap)
+function drawMinimap() {
+  const mw = DOM.minimapCanvas.width;
+  const mh = DOM.minimapCanvas.height;
+
+  minimapCtx.clearRect(0, 0, mw, mh);
+
+  // 三區底色微縮
+  minimapCtx.fillStyle = '#1e272e';
+  minimapCtx.fillRect(0, 0, mw * (ZONE_MARKET_MAX_X / WORLD_WIDTH), mh);
+
+  minimapCtx.fillStyle = '#341f97';
+  minimapCtx.fillRect(mw * (ZONE_MARKET_MAX_X / WORLD_WIDTH), 0, mw * ((ZONE_TAVERN_MAX_X - ZONE_MARKET_MAX_X) / WORLD_WIDTH), mh);
+
+  minimapCtx.fillStyle = '#0c1b18';
+  minimapCtx.fillRect(mw * (ZONE_TAVERN_MAX_X / WORLD_WIDTH), 0, mw * (1 - ZONE_TAVERN_MAX_X / WORLD_WIDTH), mh);
+
+  // 主角小金點
+  const px = (game.player.x / WORLD_WIDTH) * mw;
+  const py = (game.player.y / WORLD_HEIGHT) * mh;
+
+  minimapCtx.fillStyle = '#f9ca24';
+  minimapCtx.beginPath();
+  minimapCtx.arc(px, py, 3, 0, Math.PI * 2);
+  minimapCtx.fill();
+}
+
+// ==================== 10. 市集與調酒互動邏輯 ====================
 
 function updateResourceDisplays() {
   DOM.goldDisplay.textContent = game.gold;
   DOM.repDisplay.textContent = game.reputation;
   DOM.pointsDisplay.textContent = game.points;
-
-  // 更新吧台庫存縮圖
-  DOM.barInvChips.innerHTML = '';
-  Object.keys(game.inventory).forEach(id => {
-    const count = game.inventory[id];
-    if (count > 0) {
-      const ing = INGREDIENTS[id];
-      const chip = document.createElement('div');
-      chip.className = 'inv-chip';
-      chip.innerHTML = `<span>${ing.icon}</span> <span>${ing.name} x${count}</span>`;
-      DOM.barInvChips.appendChild(chip);
-    }
-  });
 }
 
-// 渲染市集貨架
-function renderMarket() {
-  DOM.marketShelves.innerHTML = '';
+// 開啟市集
+function openMarketModal() {
+  DOM.marketGrid.innerHTML = '';
 
   Object.values(INGREDIENTS).forEach(item => {
-    if (item.forestOnly) return; // 森林專屬不在市集販售
-
+    if (item.forestOnly) return;
     const isLocked = game.reputation < item.repReq;
     const canAfford = game.gold >= item.price && !isLocked;
-    const currentStock = game.inventory[item.id] || 0;
+    const stock = game.inventory[item.id] || 0;
 
     const card = document.createElement('div');
-    card.className = 'market-item-card glass-panel';
+    card.className = 'market-card';
 
     const tagsHtml = Object.entries(item.flavors)
       .filter(([_, val]) => val > 0)
       .map(([flv, val]) => {
         const names = { sweet: '甜', sour: '酸', spirit: '烈', magic: '魔', spicy: '辣' };
-        return `<span class="tag-badge">${names[flv]} +${val}</span>`;
-      }).join('');
+        return `<span class="mtag">${names[flv]}+${val}</span>`;
+      }).join(' ');
 
     card.innerHTML = `
-      <div class="item-top">
-        <div class="item-icon">${item.icon}</div>
-        <div class="item-details">
+      <div class="market-card-top">
+        <div class="market-card-icon">${item.icon}</div>
+        <div class="market-card-info">
           <h4>${item.name}</h4>
-          <div class="item-tags">${tagsHtml}</div>
+          <div class="market-tags">${tagsHtml}</div>
         </div>
       </div>
-      <p class="item-desc">${item.desc}</p>
-      <div class="item-bottom">
+      <p style="font-size:0.75rem;color:var(--text-dim);">${item.desc}</p>
+      <div class="market-card-bottom">
         <div>
-          <span class="item-price">🪙 ${item.price} 金幣</span>
-          <div class="item-stock">持有: ${currentStock} 份</div>
+          <strong style="color:var(--gold);font-size:0.9rem;">🪙 ${item.price}</strong>
+          <div style="font-size:0.72rem;color:var(--cyan);">庫存: ${stock}</div>
         </div>
-        <button class="buy-btn" data-id="${item.id}" ${canAfford ? '' : 'disabled'}>
-          ${isLocked ? `⭐需聲望 ${item.repReq}` : '購買 +1'}
+        <button class="buy-action-btn" ${canAfford ? '' : 'disabled'} onclick="buyMarketItem('${item.id}')">
+          ${isLocked ? `⭐需聲望${item.repReq}` : '採購 +1'}
         </button>
       </div>
     `;
 
-    DOM.marketShelves.appendChild(card);
+    DOM.marketGrid.appendChild(card);
   });
 
-  // 綁定購買事件
-  DOM.marketShelves.querySelectorAll('.buy-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.dataset.id;
-      buyIngredient(id);
-    });
-  });
+  DOM.marketModal.classList.remove('hidden');
 }
 
-function buyIngredient(id) {
+window.buyMarketItem = function(id) {
   const item = INGREDIENTS[id];
   if (!item || game.gold < item.price || game.reputation < item.repReq) return;
 
   game.gold -= item.price;
   game.inventory[id] = (game.inventory[id] || 0) + 1;
-
   window.soundEngine.playCoinSound();
+
   updateResourceDisplays();
-  renderMarket();
-}
+  openMarketModal();
+};
 
-// 渲染當前顧客
-function renderCustomer() {
+DOM.closeMarketBtn.addEventListener('click', () => {
+  DOM.marketModal.classList.add('hidden');
+});
+
+// 開啟調酒工作台
+function openBartenderModal() {
   const cust = CUSTOMERS[game.currentCustomerIndex];
-  DOM.custAvatar.textContent = cust.avatar;
-  DOM.custBadge.textContent = cust.badge;
-  DOM.custDialogText.innerHTML = cust.quote;
+  DOM.orderCustAvatar.textContent = cust.avatar;
+  DOM.orderCustName.textContent = cust.name;
+  DOM.orderCustBadge.textContent = cust.badge;
+  DOM.orderCustQuote.textContent = cust.quote;
 
-  DOM.custDesires.innerHTML = '';
+  DOM.orderCustDesires.innerHTML = '';
   const flvLabels = { sweet: '甘甜', sour: '酸爽', spirit: '烈度', magic: '魔幻', spicy: '辛辣' };
   const tagClasses = { sweet: 'tag-sweet', sour: 'tag-sour', spirit: 'tag-spirit', magic: 'tag-magic', spicy: 'tag-spicy' };
 
   Object.entries(cust.preferred).forEach(([flv, level]) => {
-    const plus = '+'.repeat(level);
     const tag = document.createElement('span');
     tag.className = `desire-tag ${tagClasses[flv] || ''}`;
-    tag.textContent = `渴求：${flvLabels[flv]} ${plus}`;
-    DOM.custDesires.appendChild(tag);
-  });
-}
-
-// ==================== 5. 三向區域切換 ====================
-
-function switchZone(targetZone) {
-  game.currentZone = targetZone;
-
-  // 更新導航按鈕樣式
-  [DOM.navMarket, DOM.navTavern, DOM.navForest].forEach(btn => btn.classList.remove('active'));
-  if (targetZone === 'market') DOM.navMarket.classList.add('active');
-  if (targetZone === 'tavern') DOM.navTavern.classList.add('active');
-  if (targetZone === 'forest') DOM.navForest.classList.add('active');
-
-  // 切換螢幕類別
-  [DOM.zoneMarket, DOM.zoneTavern, DOM.zoneForest].forEach(z => {
-    z.classList.remove('active-zone', 'hidden-left', 'hidden-right');
+    tag.textContent = `渴求：${flvLabels[flv]} ${'+'.repeat(level)}`;
+    DOM.orderCustDesires.appendChild(tag);
   });
 
-  if (targetZone === 'market') {
-    DOM.zoneMarket.classList.add('active-zone');
-    DOM.zoneTavern.classList.add('hidden-right');
-    DOM.zoneForest.classList.add('hidden-right');
-    renderMarket();
-    stopHeartbeatMonitor();
-  } else if (targetZone === 'tavern') {
-    DOM.zoneTavern.classList.add('active-zone');
-    DOM.zoneMarket.classList.add('hidden-left');
-    DOM.zoneForest.classList.add('hidden-right');
-    updateResourceDisplays();
-    stopHeartbeatMonitor();
-  } else if (targetZone === 'forest') {
-    DOM.zoneForest.classList.add('active-zone');
-    DOM.zoneMarket.classList.add('hidden-left');
-    DOM.zoneTavern.classList.add('hidden-left');
-    updateForestHUD();
-    startHeartbeatMonitor();
-  }
-
-  window.soundEngine.playIceClink();
-}
-
-DOM.navMarket.addEventListener('click', () => switchZone('market'));
-DOM.navTavern.addEventListener('click', () => switchZone('tavern'));
-DOM.navForest.addEventListener('click', () => switchZone('forest'));
-
-// ==================== 6. 神祕森林探索與防迷路系統 ====================
-
-function updateForestHUD() {
-  DOM.forestDistance.textContent = game.forestDistance;
-  const pct = Math.min(100, (game.forestDistance / game.forestLimit) * 100);
-  DOM.gaugeFill.style.width = `${pct}%`;
-
-  DOM.dangerLevel.classList.remove('safe', 'warning', 'danger');
-  DOM.mistOverlay.classList.remove('warning', 'extreme');
-
-  if (game.forestDistance < game.forestMaxSafe) {
-    DOM.dangerLevel.textContent = '安全範圍';
-    DOM.dangerLevel.classList.add('safe');
-    DOM.mistOverlay.style.opacity = '0';
-  } else if (game.forestDistance < game.forestMaxDanger) {
-    DOM.dangerLevel.textContent = '起霧警戒！';
-    DOM.dangerLevel.classList.add('warning');
-    DOM.mistOverlay.style.opacity = '0.5';
-    DOM.mistOverlay.classList.add('warning');
-  } else {
-    DOM.dangerLevel.textContent = '⚠️ 極度危險！即將迷失';
-    DOM.dangerLevel.classList.add('danger');
-    DOM.mistOverlay.style.opacity = '0.9';
-    DOM.mistOverlay.classList.add('extreme');
-  }
-
-  renderForestEncounters();
-}
-
-// 根據目前距離隨機刷新採集物與寶箱
-function renderForestEncounters() {
-  DOM.forestEncounters.innerHTML = '';
-
-  if (game.forestDistance === 0) {
-    DOM.forestEncounters.innerHTML = `
-      <div class="encounter-card glass-panel" style="grid-column: 1 / -1;">
-        <span class="encounter-icon">⛺</span>
-        <div class="encounter-title">酒吧林徑邊緣</div>
-        <p style="color:var(--text-muted);font-size:0.88rem;">點擊「深入探索」向森林深處前進。距離越遠，越有機會遇見傳說原料與古代寶箱！</p>
-      </div>
-    `;
-    return;
-  }
-
-  // 產生 1~3 個探索點
-  const count = Math.min(3, 1 + Math.floor(game.forestDistance / 60));
-  const pool = [
-    { type: 'item', id: 'glowing_shroom', chance: 0.5 },
-    { type: 'item', id: 'fairy_tear', chance: 0.35 },
-    { type: 'item', id: 'dragon_chili', chance: 0.25 },
-    { type: 'item', id: 'phoenix_ember', chance: 0.15 },
-    { type: 'chest', gold: 30 + Math.floor(game.forestDistance * 0.5), chance: 0.4 }
-  ];
-
-  for (let i = 0; i < count; i++) {
-    const itemPick = pool[Math.floor(Math.random() * pool.length)];
-    const card = document.createElement('div');
-    card.className = 'encounter-card glass-panel';
-
-    if (itemPick.type === 'chest') {
-      card.innerHTML = `
-        <span class="encounter-icon">🎁</span>
-        <div class="encounter-title">古代隱藏寶箱</div>
-        <span class="encounter-rarity rarity-legend">藏有 ${itemPick.gold} 金幣與靈氣</span>
-        <button class="action-btn glow-primary" style="margin-top:8px;padding:6px 14px;font-size:0.85rem;" onclick="gatherReward('chest', ${itemPick.gold}, this)">
-          開啟寶箱
-        </button>
-      `;
-    } else {
-      const ing = INGREDIENTS[itemPick.id];
-      card.innerHTML = `
-        <span class="encounter-icon">${ing.icon}</span>
-        <div class="encounter-title">${ing.name}</div>
-        <span class="encounter-rarity rarity-rare">稀有原料</span>
-        <button class="action-btn glow-green" style="margin-top:8px;padding:6px 14px;font-size:0.85rem;" onclick="gatherReward('item', '${ing.id}', this)">
-          ✨ 採集採收
-        </button>
-      `;
-    }
-    DOM.forestEncounters.appendChild(card);
-  }
-}
-
-// 拾取採集或寶箱
-window.gatherReward = function(type, val, btnElem) {
-  btnElem.disabled = true;
-  btnElem.textContent = '已採集 ✓';
-
-  if (type === 'chest') {
-    game.gold += val;
-    game.points += 5;
-    window.soundEngine.playCoinSound();
-  } else {
-    game.inventory[val] = (game.inventory[val] || 0) + 1;
-    game.collectedInCurrentRun[val] = (game.collectedInCurrentRun[val] || 0) + 1;
-    window.soundEngine.playGatherSound();
-  }
-
-  updateResourceDisplays();
-};
-
-// 森林前進與後退
-DOM.btnExploreForward.addEventListener('click', () => {
-  game.forestDistance += 25;
-  window.soundEngine.playIceClink();
-
-  if (game.forestDistance >= game.forestLimit) {
-    triggerLostInForest();
-  } else {
-    updateForestHUD();
-  }
-});
-
-DOM.btnExploreBack.addEventListener('click', () => {
-  game.forestDistance = Math.max(0, game.forestDistance - 25);
-  window.soundEngine.playIceClink();
-  updateForestHUD();
-});
-
-DOM.btnEmergencyReturn.addEventListener('click', () => {
-  game.forestDistance = 0;
-  game.collectedInCurrentRun = {};
-  switchZone('tavern');
-});
-
-// 觸發迷路懲罰機制
-function triggerLostInForest() {
-  window.soundEngine.playLostSound();
-  DOM.lostAlertBanner.classList.add('show');
-  
-  // 遺失本次採集物的一半
-  Object.keys(game.collectedInCurrentRun).forEach(id => {
-    const lostAmount = Math.ceil(game.collectedInCurrentRun[id] / 2);
-    game.inventory[id] = Math.max(0, (game.inventory[id] || 0) - lostAmount);
-  });
-  game.collectedInCurrentRun = {};
-  game.forestDistance = 0;
-
-  setTimeout(() => {
-    DOM.lostAlertBanner.classList.remove('show');
-    switchZone('tavern');
-  }, 3500);
-}
-
-// 心跳音效定時監聽器
-function startHeartbeatMonitor() {
-  stopHeartbeatMonitor();
-  game.heartbeatInterval = setInterval(() => {
-    if (game.currentZone !== 'forest') return;
-    if (game.forestDistance >= game.forestMaxDanger) {
-      window.soundEngine.playHeartbeat(0.65);
-    } else if (game.forestDistance >= game.forestMaxSafe) {
-      window.soundEngine.playHeartbeat(0.35);
-    }
-  }, 1600);
-}
-
-function stopHeartbeatMonitor() {
-  if (game.heartbeatInterval) {
-    clearInterval(game.heartbeatInterval);
-    game.heartbeatInterval = null;
-  }
-  DOM.mistOverlay.style.opacity = '0';
-  DOM.mistOverlay.classList.remove('warning', 'extreme');
-}
-
-// ==================== 7. 調酒互動工作台 ====================
-
-const canvas = DOM.cocktailCanvas;
-const ctx = canvas.getContext('2d');
-
-DOM.openBartenderBtn.addEventListener('click', () => {
-  openBartenderModal();
-});
-
-DOM.closeBartenderBtn.addEventListener('click', () => {
-  closeBartenderModal();
-});
-
-function openBartenderModal() {
-  DOM.bartenderModal.classList.remove('hidden');
   renderBartenderIngredients();
   drawCocktailGlass();
   updateFlavorHUD();
+
+  DOM.bartenderModal.classList.remove('hidden');
 }
 
-function closeBartenderModal() {
+DOM.closeBartenderBtn.addEventListener('click', () => {
   DOM.bartenderModal.classList.add('hidden');
   stopPouring();
-}
+});
 
 function renderBartenderIngredients() {
   DOM.ingredientGrid.innerHTML = '';
-  let firstAvailable = null;
+  let firstValid = null;
 
   Object.values(INGREDIENTS).forEach(item => {
-    const count = game.inventory[item.id] || 0;
+    const stock = game.inventory[item.id] || 0;
     const card = document.createElement('div');
     card.className = `ing-select-card ${game.selectedIngredient === item.id ? 'selected' : ''}`;
-    if (count <= 0) {
+
+    if (stock <= 0) {
       card.style.opacity = '0.35';
       card.style.pointerEvents = 'none';
-    } else if (!firstAvailable) {
-      firstAvailable = item.id;
+    } else if (!firstValid) {
+      firstValid = item.id;
     }
 
     const flvText = Object.entries(item.flavors)
@@ -645,35 +1190,31 @@ function renderBartenderIngredients() {
       }).join(' ');
 
     card.innerHTML = `
-      <div class="ing-select-top">
-        <span class="ing-name">${item.icon} ${item.name}</span>
-        <span class="ing-count">x${count}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:0.82rem;color:#fff;">${item.icon} ${item.name}</strong>
+        <span style="font-size:0.72rem;color:var(--cyan);">x${stock}</span>
       </div>
-      <div class="ing-flavors">${flvText}</div>
+      <div style="font-size:0.7rem;color:var(--text-dim);">${flvText}</div>
     `;
 
-    card.addEventListener('click', () => {
-      selectIngredient(item.id);
-    });
-
+    card.addEventListener('click', () => selectBartenderIngredient(item.id));
     DOM.ingredientGrid.appendChild(card);
   });
 
-  if (!game.selectedIngredient && firstAvailable) {
-    selectIngredient(firstAvailable);
+  if (!game.selectedIngredient && firstValid) {
+    selectBartenderIngredient(firstValid);
   } else if (game.selectedIngredient) {
-    selectIngredient(game.selectedIngredient);
+    selectBartenderIngredient(game.selectedIngredient);
   }
 }
 
-function selectIngredient(id) {
+function selectBartenderIngredient(id) {
   game.selectedIngredient = id;
-  const count = game.inventory[id] || 0;
+  const stock = game.inventory[id] || 0;
 
-  document.querySelectorAll('.ing-select-card').forEach(c => c.classList.remove('selected'));
   renderBartenderIngredients();
 
-  if (count > 0) {
+  if (stock > 0) {
     const item = INGREDIENTS[id];
     DOM.pourBtn.disabled = false;
     DOM.pourBtn.innerHTML = `<span class="pour-btn-icon">${item.icon}</span> 按住注入 ${item.name}`;
@@ -683,7 +1224,7 @@ function selectIngredient(id) {
   }
 }
 
-// 倒酒長按事件（適配滑鼠 + 行動裝置觸控）
+// 倒酒長按事件
 ['mousedown', 'touchstart'].forEach(evt => {
   DOM.pourBtn.addEventListener(evt, (e) => {
     e.preventDefault();
@@ -698,16 +1239,16 @@ function selectIngredient(id) {
   });
 });
 
-function getTotalVolume() {
-  return game.glassLayers.reduce((sum, layer) => sum + layer.amount, 0);
+function getTotalCocktailVolume() {
+  return game.glassLayers.reduce((sum, l) => sum + l.amount, 0);
 }
 
 function startPouring() {
   if (game.isPouring || !game.selectedIngredient) return;
-  const count = game.inventory[game.selectedIngredient] || 0;
-  if (count <= 0) return;
+  const stock = game.inventory[game.selectedIngredient] || 0;
+  if (stock <= 0) return;
 
-  const currentVol = getTotalVolume();
+  const currentVol = getTotalCocktailVolume();
   if (currentVol >= game.glassCapacity) return;
 
   game.isPouring = true;
@@ -717,13 +1258,12 @@ function startPouring() {
   const item = INGREDIENTS[game.selectedIngredient];
 
   game.pourTimer = setInterval(() => {
-    const vol = getTotalVolume();
+    const vol = getTotalCocktailVolume();
     if (vol >= game.glassCapacity) {
       stopPouring();
       return;
     }
 
-    // 每次注入 2.5ml
     const pourStep = 2.5;
     const lastLayer = game.glassLayers[game.glassLayers.length - 1];
 
@@ -738,16 +1278,9 @@ function startPouring() {
       });
     }
 
-    // 扣除庫存 (每倒滿 25ml 消耗 1 單位庫存)
-    const totalPouredOfThis = game.glassLayers
-      .filter(l => l.id === item.id)
-      .reduce((s, l) => s + l.amount, 0);
-    
-    // 即時微調
     drawCocktailGlass();
     updateFlavorHUD();
-    DOM.finishDrinkBtn.disabled = getTotalVolume() < 20;
-
+    DOM.finishDrinkBtn.disabled = getTotalCocktailVolume() < 20;
   }, 80);
 }
 
@@ -762,7 +1295,7 @@ function stopPouring() {
     game.pourTimer = null;
   }
 
-  // 結算原料消耗（一次調酒每使用該原料至少扣 1 份）
+  // 每次調酒使用該原料扣 1 份庫存
   if (game.selectedIngredient && game.inventory[game.selectedIngredient] > 0) {
     game.inventory[game.selectedIngredient] = Math.max(0, game.inventory[game.selectedIngredient] - 1);
     updateResourceDisplays();
@@ -770,7 +1303,6 @@ function stopPouring() {
   }
 }
 
-// 倒掉重調
 DOM.resetDrinkBtn.addEventListener('click', () => {
   game.glassLayers = [];
   stopPouring();
@@ -780,107 +1312,71 @@ DOM.resetDrinkBtn.addEventListener('click', () => {
   window.soundEngine.playIceClink();
 });
 
-// Canvas 繪製調酒杯與液體分層
+// 調酒杯 Canvas 繪製
 function drawCocktailGlass() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  cocktailCtx.clearRect(0, 0, DOM.cocktailCanvas.width, DOM.cocktailCanvas.height);
 
-  const glassX = 35;
-  const glassY = 30;
-  const glassW = 150;
-  const glassH = 260;
-  const bottomW = 100;
+  const gx = 25;
+  const gy = 20;
+  const gw = 150;
+  const gh = 240;
+  const bottomW = 90;
 
-  // 1. 杯身背景與高光
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.lineWidth = 3;
+  cocktailCtx.save();
+  cocktailCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  cocktailCtx.lineWidth = 3;
 
-  // 繪製高腳杯梯形輪廓路徑
-  ctx.beginPath();
-  ctx.moveTo(glassX, glassY);
-  ctx.lineTo(glassX + (glassW - bottomW) / 2, glassY + glassH);
-  ctx.lineTo(glassX + (glassW + bottomW) / 2, glassY + glassH);
-  ctx.lineTo(glassX + glassW, glassY);
-  ctx.stroke();
+  cocktailCtx.beginPath();
+  cocktailCtx.moveTo(gx, gy);
+  cocktailCtx.lineTo(gx + (gw - bottomW) / 2, gy + gh);
+  cocktailCtx.lineTo(gx + (gw + bottomW) / 2, gy + gh);
+  cocktailCtx.lineTo(gx + gw, gy);
+  cocktailCtx.stroke();
 
-  // 2. 剪裁路徑以填滿液體
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(glassX, glassY);
-  ctx.lineTo(glassX + (glassW - bottomW) / 2, glassY + glassH);
-  ctx.lineTo(glassX + (glassW + bottomW) / 2, glassY + glassH);
-  ctx.lineTo(glassX + glassW, glassY);
-  ctx.closePath();
-  ctx.clip();
+  cocktailCtx.save();
+  cocktailCtx.beginPath();
+  cocktailCtx.moveTo(gx, gy);
+  cocktailCtx.lineTo(gx + (gw - bottomW) / 2, gy + gh);
+  cocktailCtx.lineTo(gx + (gw + bottomW) / 2, gy + gh);
+  cocktailCtx.lineTo(gx + gw, gy);
+  cocktailCtx.closePath();
+  cocktailCtx.clip();
 
-  // 繪製各層液體（由底部堆疊向上）
-  const totalVol = getTotalVolume();
-  let currentBaseY = glassY + glassH;
-
+  let currentBaseY = gy + gh;
   game.glassLayers.forEach((layer) => {
-    const layerHeight = (layer.amount / game.glassCapacity) * glassH;
-    const topY = currentBaseY - layerHeight;
+    const layerH = (layer.amount / game.glassCapacity) * gh;
+    const topY = currentBaseY - layerH;
 
-    // 建立液體漸層與微光
-    const grad = ctx.createLinearGradient(0, topY, 0, currentBaseY);
+    const grad = cocktailCtx.createLinearGradient(0, topY, 0, currentBaseY);
     grad.addColorStop(0, layer.color);
-    grad.addColorStop(1, adjustColorBrightness(layer.color, -30));
+    grad.addColorStop(1, layer.color);
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, topY, canvas.width, layerHeight);
+    cocktailCtx.fillStyle = grad;
+    cocktailCtx.fillRect(0, topY, DOM.cocktailCanvas.width, layerH);
 
-    // 液體表面流光小弧線
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-    ctx.fillRect(0, topY, canvas.width, 2.5);
-
-    // 隨機小氣泡
-    if (Math.random() > 0.4) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.beginPath();
-      const bX = glassX + 20 + Math.random() * (glassW - 40);
-      const bY = topY + Math.random() * layerHeight;
-      ctx.arc(bX, bY, 1.8, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    cocktailCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    cocktailCtx.fillRect(0, topY, DOM.cocktailCanvas.width, 2);
 
     currentBaseY = topY;
   });
 
-  ctx.restore(); // 取消 clip
+  cocktailCtx.restore();
 
-  // 3. 杯身高光反光線
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(glassX + 6, glassY + 10);
-  ctx.lineTo(glassX + (glassW - bottomW) / 2 + 6, glassY + glassH - 10);
-  ctx.stroke();
+  // 反光線
+  cocktailCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  cocktailCtx.lineWidth = 2;
+  cocktailCtx.beginPath();
+  cocktailCtx.moveTo(gx + 6, gy + 8);
+  cocktailCtx.lineTo(gx + (gw - bottomW) / 2 + 6, gy + gh - 8);
+  cocktailCtx.stroke();
 
-  // 杯底座
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-  ctx.fillRect(glassX + 15, glassY + glassH, glassW - 30, 8);
+  cocktailCtx.restore();
 
-  ctx.restore();
-
-  // 更新體積數值
-  DOM.glassVolumeText.textContent = `${Math.round(totalVol)} / ${game.glassCapacity} ml`;
+  DOM.glassVolumeText.textContent = `${Math.round(getTotalCocktailVolume())} / ${game.glassCapacity} ml`;
 }
 
-// 輔助顏色明暗函式
-function adjustColorBrightness(hex, percent) {
-  let num = parseInt(hex.replace('#',''), 16),
-      amt = Math.round(2.55 * percent),
-      R = (num >> 16) + amt,
-      G = (num >> 8 & 0x00FF) + amt,
-      B = (num & 0x0000FF) + amt;
-  return '#' + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
-}
-
-// 更新風味儀表 HUD
 function updateFlavorHUD() {
   const totals = { sweet: 0, sour: 0, spirit: 0, magic: 0, spicy: 0 };
-  let totalAmount = getTotalVolume() || 1;
-
   game.glassLayers.forEach(l => {
     Object.keys(totals).forEach(k => {
       totals[k] += (l.flavors[k] || 0) * (l.amount / 10);
@@ -895,20 +1391,14 @@ function updateFlavorHUD() {
   DOM.hudSpicy.style.width = `${Math.min(100, (totals.spicy / maxVal) * 100)}%`;
 }
 
-// ==================== 8. 完成調配與綜合評分結算 ====================
-
+// 結算與打分
 DOM.finishDrinkBtn.addEventListener('click', () => {
-  finishCocktailEvaluation();
-});
-
-function finishCocktailEvaluation() {
-  const totalVol = getTotalVolume();
+  const totalVol = getTotalCocktailVolume();
   if (totalVol < 15) return;
 
-  closeBartenderModal();
+  DOM.bartenderModal.classList.add('hidden');
   window.soundEngine.playFanfare();
 
-  // 計算風味加總
   const flavors = { sweet: 0, sour: 0, spirit: 0, magic: 0, spicy: 0 };
   game.glassLayers.forEach(l => {
     Object.keys(flavors).forEach(k => {
@@ -916,23 +1406,13 @@ function finishCocktailEvaluation() {
     });
   });
 
-  // 1. 視覺與分層評分 (1~5 星)
   const layerCount = game.glassLayers.length;
-  let visualStars = 3;
-  if (layerCount >= 3) visualStars = 5;
-  else if (layerCount === 2) visualStars = 4;
+  let visualStars = layerCount >= 3 ? 5 : layerCount === 2 ? 4 : 3;
+  let precisionStars = (totalVol >= 85 && totalVol <= 100) ? 5 : totalVol >= 60 ? 4 : 2;
 
-  // 2. 倒酒精確度評分 (1~5 星)
-  let precisionStars = 3;
-  if (totalVol >= 85 && totalVol <= 100) precisionStars = 5;
-  else if (totalVol >= 60) precisionStars = 4;
-  else precisionStars = 2;
-
-  // 3. 顧客風味契合度評分 (1~5 星)
   const cust = CUSTOMERS[game.currentCustomerIndex];
   let matchScore = 0;
   let targetCount = 0;
-
   Object.entries(cust.preferred).forEach(([flv, reqLevel]) => {
     targetCount++;
     const actual = flavors[flv] || 0;
@@ -941,10 +1421,8 @@ function finishCocktailEvaluation() {
     else matchScore += 0.3;
   });
 
-  const flavorRatio = matchScore / (targetCount || 1);
-  let flavorStars = Math.max(2, Math.min(5, Math.round(flavorRatio * 5)));
+  const flavorStars = Math.max(2, Math.min(5, Math.round((matchScore / (targetCount || 1)) * 5)));
 
-  // 命名演算法與酒名判定
   let drinkName = '冒險家特飲';
   let tier = '良品特調';
 
@@ -965,23 +1443,18 @@ function finishCocktailEvaluation() {
     tier = '大師特選';
   }
 
-  // 解鎖圖鑑
   game.unlockedRecipes.add(drinkName);
 
-  // 計算三元獎勵
   const avgStars = (visualStars + precisionStars + flavorStars) / 3;
   const baseGold = 25 + Math.round(totalVol * 0.2);
-  const tipBonus = cust.tipBonus * (avgStars / 4);
-  const earnedGold = Math.round(baseGold * tipBonus);
+  const earnedGold = Math.round(baseGold * cust.tipBonus * (avgStars / 4));
   const earnedRep = Math.max(3, Math.round(avgStars * 2.2));
   const earnedPts = Math.round(avgStars * 3 + (layerCount >= 3 ? 5 : 0));
 
-  // 發放獎勵
   game.gold += earnedGold;
   game.reputation += earnedRep;
   game.points += earnedPts;
 
-  // 渲染結算視窗
   DOM.resDrinkName.textContent = drinkName;
   DOM.resDrinkTier.textContent = tier;
   DOM.resVisualStars.textContent = '⭐'.repeat(visualStars);
@@ -990,82 +1463,58 @@ function finishCocktailEvaluation() {
 
   DOM.resNpcAvatar.textContent = cust.avatar;
   DOM.resNpcName.textContent = cust.name;
-  
-  let comment = `「非常感謝！這正是我想品嚐的風味，乾杯！」`;
-  if (avgStars >= 4.5) {
-    comment = `「不可思議！這色彩如同星河倒映，香氣在舌尖綻放，這是我一生喝過最驚豔的特調！」`;
-  } else if (avgStars >= 3.5) {
-    comment = `「層次調配得非常巧妙，恰到好處的口感讓我疲勞盡消，期待下次再來！」`;
-  }
-  DOM.resNpcComment.textContent = comment;
+  DOM.resNpcComment.textContent = avgStars >= 4 ? '「這份層次與流動的色彩宛如藝術品，真是絕妙的特調！」' : '「口感細緻，為我的旅途帶來了充沛元氣！」';
 
   DOM.resEarnGold.textContent = `+${earnedGold}`;
   DOM.resEarnRep.textContent = `+${earnedRep}`;
   DOM.resEarnPts.textContent = `+${earnedPts}`;
 
-  // 清空調酒杯
   game.glassLayers = [];
-
-  // 顯示結果
   DOM.resultModal.classList.remove('hidden');
   updateResourceDisplays();
-}
+});
 
 DOM.confirmResultBtn.addEventListener('click', () => {
   DOM.resultModal.classList.add('hidden');
-  // 切換至下一位顧客
   game.currentCustomerIndex = (game.currentCustomerIndex + 1) % CUSTOMERS.length;
-  renderCustomer();
 });
 
-// ==================== 9. 圖鑑收藏櫃 ====================
-
+// 圖鑑 Modal
 DOM.recipeBookBtn.addEventListener('click', () => {
-  openRecipeBook();
+  DOM.recipeGrid.innerHTML = '';
+  RECIPES_CATALOG.forEach(r => {
+    const isUnlocked = game.unlockedRecipes.has(r.name);
+    const card = document.createElement('div');
+    card.className = `recipe-card ${isUnlocked ? '' : 'locked'}`;
+    card.innerHTML = `
+      <div style="font-size:1.6rem;">${isUnlocked ? r.icon : '🔒'}</div>
+      <strong style="color:#fff;font-size:0.9rem;">${isUnlocked ? r.name : '？？？'}</strong>
+      <div style="font-size:0.72rem;color:var(--magic);">${r.tags}</div>
+      <p style="font-size:0.72rem;color:var(--text-dim);margin-top:4px;">${isUnlocked ? '已完成收錄' : `線索: ${r.requirement}`}</p>
+    `;
+    DOM.recipeGrid.appendChild(card);
+  });
+  DOM.recipeBookModal.classList.remove('hidden');
 });
 
 DOM.closeBookBtn.addEventListener('click', () => {
   DOM.recipeBookModal.classList.add('hidden');
 });
 
-function openRecipeBook() {
-  DOM.recipeGrid.innerHTML = '';
-
-  RECIPES_CATALOG.forEach(r => {
-    const isUnlocked = game.unlockedRecipes.has(r.name);
-    const card = document.createElement('div');
-    card.className = `recipe-card glass-panel ${isUnlocked ? '' : 'locked'}`;
-
-    card.innerHTML = `
-      <div style="font-size:1.8rem;">${isUnlocked ? r.icon : '🔒'}</div>
-      <div class="recipe-card-name">${isUnlocked ? r.name : '？？？（未解鎖）'}</div>
-      <div class="recipe-card-tags">${r.tags}</div>
-      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-        ${isUnlocked ? '已完成解鎖記錄' : `解鎖線索: ${r.requirement}`}
-      </p>
-    `;
-
-    DOM.recipeGrid.appendChild(card);
-  });
-
-  DOM.recipeBookModal.classList.remove('hidden');
-}
-
-// 音效開關
 DOM.audioToggleBtn.addEventListener('click', () => {
   const muted = window.soundEngine.toggleMute();
   DOM.audioToggleBtn.textContent = muted ? '🔇' : '🔊';
-  DOM.audioToggleBtn.title = muted ? '音效已靜音' : '音效已開啟';
 });
 
-// 初始化載入
-function initGame() {
-  updateResourceDisplays();
-  renderCustomer();
-  renderMarket();
-  updateForestHUD();
+// ==================== 11. 主遊戲循環 (Game Loop) ====================
+
+function gameLoop() {
+  updatePlayer();
+  drawWorld();
+  requestAnimationFrame(gameLoop);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  initGame();
+  updateResourceDisplays();
+  requestAnimationFrame(gameLoop);
 });
