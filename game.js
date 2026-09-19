@@ -10,11 +10,15 @@
 // ==================== 1. 預載吉卜力手繪美術資產 ====================
 
 const ASSET_IMAGES = {
+  worldMasterBg: new Image(),
+  tavernInterior: new Image(),
   fruitStall: new Image(),
   forestRoots: new Image(),
   tavernHouse: new Image()
 };
-ASSET_IMAGES.fruitStall.src = 'assets/fruit_stall.jpg';
+ASSET_IMAGES.worldMasterBg.src = 'assets/world_master_bg.jpg';
+ASSET_IMAGES.tavernInterior.src = 'assets/tavern_interior.jpg';
+ASSET_IMAGES.fruitStall.src = 'assets/fruit_stall.png';
 ASSET_IMAGES.forestRoots.src = 'assets/forest_roots.jpg';
 ASSET_IMAGES.tavernHouse.src = 'assets/tavern_house.jpg';
 
@@ -65,70 +69,73 @@ const WORLD_WIDTH = 3600;
 const WORLD_HEIGHT = 1000;
 
 const ZONE_MARKET_MAX_X = 1200;
-const ZONE_TAVERN_MAX_X = 2200;
-const FOREST_START_X = 2200;
-const FOREST_WARN_X = 2700;
-const FOREST_DANGER_X = 3100;
-const FOREST_LOST_X = 3520;
+const ZONE_TAVERN_MAX_X = 2250;
+const FOREST_START_X = 2250;
+const FOREST_WARN_X = 2750;
+const FOREST_DANGER_X = 3150;
+const FOREST_LOST_X = 3530;
 
 const INDOOR_WIDTH = 1100;
 const INDOOR_HEIGHT = 700;
 
-// 街區特色店鋪（包含柑橘木質手繪水果鋪與其他工坊）
+// 街區特色店鋪（分佈在左側陽光石板街區）
 const STREET_SHOPS = [
-  { id: 'shop_citrus', name: '切片柑橘糖果工坊', icon: '🍊', isGhibliStall: true, x: 380, y: 220, w: 260, h: 260, doorX: 510, doorY: 480, intro: '切片柑橘造型木質棚屋，掛滿果籃與七彩琉璃糖漿罐。' },
-  { id: 'shop_rum', name: '深淵烈酒蒸餾廠', icon: '🍷', isGhibliStall: false, x: 740, y: 640, w: 150, h: 110, doorX: 815, doorY: 640, intro: '紅磚大煙囪蒸餾廠，飄散著濃郁烈酒與橡木香。' },
-  { id: 'shop_herbs', name: '精靈香草晨露屋', icon: '🌿', isGhibliStall: false, x: 960, y: 260, w: 140, h: 95, doorX: 1030, doorY: 355, intro: '綠藤纏繞的木屋，販售純淨晨露與草藥。' },
-  { id: 'shop_frost', name: '極地薄荷霜閣', icon: '🧊', isGhibliStall: false, x: 200, y: 640, w: 140, h: 95, doorX: 270, doorY: 640, intro: '屋簷結著晶瑩冰柱，提供沁涼薄荷精粹。' }
+  { id: 'shop_citrus', name: '切片柑橘糖果工坊', icon: '🍊', isGhibliStall: true, x: 420, y: 390, w: 260, h: 260, doorX: 550, doorY: 630, intro: '切片柑橘造型木質手繪工坊，掛滿果籃與七彩琉璃糖漿罐。' },
+  { id: 'shop_rum', name: '深淵烈酒蒸餾廠', icon: '🍷', isGhibliStall: false, x: 140, y: 440, w: 180, h: 170, doorX: 230, doorY: 610, intro: '紅磚大煙囪手繪蒸餾廠，飄散著濃郁烈酒與橡木香。' },
+  { id: 'shop_herbs', name: '精靈香草晨露屋', icon: '🌿', isGhibliStall: false, x: 740, y: 430, w: 180, h: 160, doorX: 830, doorY: 590, intro: '綠藤纏繞的木屋，販售純淨晨露與草藥。' },
+  { id: 'shop_frost', name: '極地薄荷霜閣', icon: '🧊', isGhibliStall: false, x: 980, y: 440, w: 160, h: 160, doorX: 1060, doorY: 600, intro: '屋簷結著晶瑩冰柱，提供沁涼薄荷精粹。' }
 ];
 
-// 中央調酒師酒館小店
+// 中央調酒師酒館小店（完美定位於世界全景中）
 const TAVERN_HOUSE = {
-  x: 1540,
-  y: 200,
-  w: 340,
-  h: 340,
-  doorX: 1710,
-  doorY: 530
+  x: 1150,
+  y: 0,
+  w: 1200,
+  h: 1000,
+  doorX: 1725,
+  doorY: 595,
+  solidMinX: 1560,
+  solidMaxX: 1890,
+  solidMinY: 340,
+  solidMaxY: 580
 };
 
 // 森林古樹與盤根秘境景點
 const FOREST_LANDMARK = {
-  x: 2720,
-  y: 220,
-  w: 340,
-  h: 340,
-  chestX: 2890,
-  chestY: 480
+  x: 2995,
+  y: 460,
+  w: 380,
+  h: 380,
+  chestX: 2995,
+  chestY: 520
 };
 
 // 森林生動大樹陣列
 const FOREST_TREES = [
-  { x: 2340, y: 300, trunkR: 24, crownR: 65, currentAlpha: 1 },
-  { x: 2400, y: 700, trunkR: 26, crownR: 70, currentAlpha: 1 },
-  { x: 2540, y: 440, trunkR: 28, crownR: 75, currentAlpha: 1 },
-  { x: 2600, y: 220, trunkR: 22, crownR: 62, currentAlpha: 1 },
-  { x: 3160, y: 340, trunkR: 30, crownR: 80, currentAlpha: 1 }, // 樹後藏寶箱
-  { x: 3260, y: 650, trunkR: 30, crownR: 82, currentAlpha: 1 },
-  { x: 3380, y: 320, trunkR: 34, crownR: 88, currentAlpha: 1 }, // 樹後藏寶箱
-  { x: 3480, y: 680, trunkR: 32, crownR: 85, currentAlpha: 1 }
+  { x: 2360, y: 420, trunkR: 24, crownR: 68, currentAlpha: 1 },
+  { x: 2460, y: 720, trunkR: 26, crownR: 72, currentAlpha: 1 },
+  { x: 2600, y: 480, trunkR: 28, crownR: 75, currentAlpha: 1 },
+  { x: 2750, y: 360, trunkR: 24, crownR: 65, currentAlpha: 1 },
+  { x: 3240, y: 420, trunkR: 32, crownR: 82, currentAlpha: 1 }, // 樹後藏寶箱 1
+  { x: 3340, y: 700, trunkR: 30, crownR: 80, currentAlpha: 1 },
+  { x: 3460, y: 620, trunkR: 34, crownR: 88, currentAlpha: 1 }  // 樹後藏寶箱 2
 ];
 
 // 森林藏寶箱（包含盤根老樹下的核心寶箱與樹後密箱）
 const FOREST_CHESTS = [
-  { id: 'chest_roots', name: '盤根老樹下的古老寶箱', x: 2890, y: 480, opened: false, rewardIndex: 0 },
-  { id: 'chest_tree_1', name: '幽谷古樹後的寶盒', x: 3160, y: 290, opened: false, rewardIndex: 1 },
-  { id: 'chest_tree_2', name: '迷霧深處青苔寶藏', x: 3380, y: 270, opened: false, rewardIndex: 2 }
+  { id: 'chest_roots', name: '盤根老樹下的古老寶箱', x: 2995, y: 520, opened: false, rewardIndex: 0 },
+  { id: 'chest_tree_1', name: '幽谷古樹後的寶盒', x: 3240, y: 460, opened: false, rewardIndex: 1 },
+  { id: 'chest_tree_2', name: '迷霧深處青苔寶藏', x: 3460, y: 660, opened: false, rewardIndex: 2 }
 ];
 
-// 環境浮動微粒（落葉與魔法氣泡）
-const AMBIENT_PARTICLES = Array.from({ length: 50 }, () => ({
+// 環境浮動微粒（落葉、金黃孢子與魔法氣泡）
+const AMBIENT_PARTICLES = Array.from({ length: 60 }, () => ({
   x: Math.random() * WORLD_WIDTH,
-  y: Math.random() * WORLD_HEIGHT,
-  size: 2 + Math.random() * 3,
-  speedX: 0.3 + Math.random() * 0.6,
+  y: 200 + Math.random() * 750,
+  size: 2 + Math.random() * 3.5,
+  speedX: 0.3 + Math.random() * 0.7,
   speedY: (Math.random() - 0.5) * 0.4,
-  type: Math.random() > 0.5 ? 'leaf' : 'bubble',
+  type: Math.random() > 0.6 ? 'leaf' : (Math.random() > 0.5 ? 'spore' : 'bubble'),
   sway: Math.random() * Math.PI * 2
 }));
 
@@ -166,8 +173,8 @@ class GameState {
     this.pourTimer = null;
 
     this.player = {
-      x: 1710,
-      y: 570,
+      x: 1725,
+      y: 640,
       radius: 17,
       speed: 3.8,
       sprintSpeed: 6.4,
@@ -176,8 +183,8 @@ class GameState {
       walkAnimTime: 0,
       targetX: null,
       targetY: null,
-      fairyX: 1690,
-      fairyY: 550,
+      fairyX: 1705,
+      fairyY: 620,
       fairyAngle: 0
     };
 
@@ -356,22 +363,24 @@ function isAnyModalOpen() {
 
 function checkCollision(x, y) {
   if (game.currentScene === 'indoor') {
-    if (x < 120 || x > INDOOR_WIDTH - 120 || y < 200 || y > INDOOR_HEIGHT - 60) return true;
-    if (x > 380 && x < 720 && y > 250 && y < 350) return true; // 吧台
+    if (x < 110 || x > INDOOR_WIDTH - 110 || y < 220 || y > INDOOR_HEIGHT - 60) return true;
+    if (x > 320 && x < 780 && y > 270 && y < 365) return true; // 吧台阻擋
     return false;
   }
 
-  // 戶外
-  // 1. 酒館外觀阻擋
+  // 戶外邊界
+  if (x < 40 || x > WORLD_WIDTH - 40 || y < 330 || y > WORLD_HEIGHT - 40) return true;
+
+  // 1. 中央酒館實體建築阻擋
   const h = TAVERN_HOUSE;
-  if (x > h.x + 20 && x < h.x + h.w - 20 && y > h.y + 60 && y < h.y + h.h - 30) {
-    // 門口留出通道
-    if (!(x > h.doorX - 25 && x < h.doorX + 25 && y > h.doorY - 30)) return true;
+  if (x > h.solidMinX && x < h.solidMaxX && y > h.solidMinY && y < h.solidMaxY) {
+    // 正門口通道保留 (x: 1690..1760, y: 550..600)
+    if (!(x > h.doorX - 35 && x < h.doorX + 35 && y > h.doorY - 20)) return true;
   }
 
-  // 2. 柑橘店鋪與其他商鋪阻擋
+  // 2. 街區店鋪阻擋
   for (const shop of STREET_SHOPS) {
-    if (x > shop.x + 10 && x < shop.x + shop.w - 10 && y > shop.y + 30 && y < shop.y + shop.h - 20) {
+    if (x > shop.x + 10 && x < shop.x + shop.w - 10 && y > shop.y + 40 && y < shop.y + shop.h - 10) {
       return true;
     }
   }
@@ -523,7 +532,7 @@ function triggerLostInForest() {
   game.collectedInCurrentRun = {};
 
   game.player.x = TAVERN_HOUSE.doorX;
-  game.player.y = TAVERN_HOUSE.doorY + 30;
+  game.player.y = TAVERN_HOUSE.doorY + 45;
   game.player.targetX = null;
   game.player.targetY = null;
 
@@ -539,13 +548,13 @@ function detectNearbyInteraction() {
   if (game.currentScene === 'indoor') {
     const dDoor = Math.hypot(game.player.x - 550, game.player.y - 650);
     if (dDoor < minDist) {
-      closest = { type: 'exit_tavern', x: 550, y: 620, prompt: '🚪 推門走到庭院' };
+      closest = { type: 'exit_tavern', x: 550, y: 620, prompt: '🚪 推門走回花園庭院 (按 空白鍵)' };
     }
 
     const dBar = Math.hypot(game.player.x - 550, game.player.y - 360);
-    if (dBar < minDist + 15) {
+    if (dBar < minDist + 25) {
       const cust = CUSTOMERS[game.currentCustomerIndex];
-      closest = { type: 'bartender', x: 550, y: 320, prompt: `✨ 為 ${cust.name} 調酒` };
+      closest = { type: 'bartender', x: 550, y: 320, prompt: `✨ 為 ${cust.name} 調酒 (按 空白鍵)` };
     }
 
     DOM.currentZoneName.textContent = '🏠 奇幻酒館・溫馨室內';
@@ -553,23 +562,23 @@ function detectNearbyInteraction() {
     // 1. 酒館大門
     const dEnter = Math.hypot(game.player.x - TAVERN_HOUSE.doorX, game.player.y - TAVERN_HOUSE.doorY);
     if (dEnter < minDist) {
-      closest = { type: 'enter_tavern', x: TAVERN_HOUSE.doorX, y: TAVERN_HOUSE.doorY - 20, prompt: '🏠 推門進入酒館' };
+      closest = { type: 'enter_tavern', x: TAVERN_HOUSE.doorX, y: TAVERN_HOUSE.doorY - 20, prompt: '🏠 推門進入奇幻酒館 (按 空白鍵)' };
     }
 
-    // 2. 街區店鋪（包含手繪柑橘店）
+    // 2. 街區店鋪（包含手繪柑橘工坊）
     STREET_SHOPS.forEach(shop => {
       const d = Math.hypot(game.player.x - shop.doorX, game.player.y - shop.doorY);
-      if (d < minDist + 20) {
-        closest = { type: 'shop', shop: shop, x: shop.doorX, y: shop.doorY - 20, prompt: `🛒 走進 ${shop.name}` };
+      if (d < minDist + 15) {
+        closest = { type: 'shop', shop: shop, x: shop.doorX, y: shop.doorY - 20, prompt: `🛒 走進 ${shop.name} (按 空白鍵)` };
       }
     });
 
-    // 3. 森林寶箱（包含盤根老樹下的寶箱）
+    // 3. 森林寶箱（包含盤根老樹下的寶箱與樹後密盒）
     FOREST_CHESTS.forEach(chest => {
       if (chest.opened) return;
       const d = Math.hypot(game.player.x - chest.x, game.player.y - chest.y);
       if (d < minDist) {
-        closest = { type: 'chest', chest: chest, x: chest.x, y: chest.y - 25, prompt: `🎁 開啟 ${chest.name}` };
+        closest = { type: 'chest', chest: chest, x: chest.x, y: chest.y - 25, prompt: `🎁 開啟 ${chest.name} (按 空白鍵)` };
       }
     });
 
@@ -604,7 +613,7 @@ function triggerActiveInteraction() {
     window.soundEngine.playIceClink();
     game.currentScene = 'indoor';
     game.player.x = 550;
-    game.player.y = 600;
+    game.player.y = 560;
     game.player.targetX = null;
     game.player.targetY = null;
     DOM.mistVignette.style.opacity = '0';
@@ -613,7 +622,7 @@ function triggerActiveInteraction() {
     window.soundEngine.playIceClink();
     game.currentScene = 'outdoor';
     game.player.x = TAVERN_HOUSE.doorX;
-    game.player.y = TAVERN_HOUSE.doorY + 30;
+    game.player.y = TAVERN_HOUSE.doorY + 45;
     game.player.targetX = null;
     game.player.targetY = null;
   } else if (target.type === 'shop') {
@@ -708,7 +717,7 @@ function openTreasureChest(chest) {
 }
 DOM.closeChestBtn.addEventListener('click', () => DOM.chestRewardModal.classList.add('hidden'));
 
-// ==================== 8. 2D 畫布繪製系統 ====================
+// ==================== 8. 全景吉卜力手繪世界繪製系統 ====================
 
 function drawWorld() {
   worldCtx.clearRect(0, 0, DOM.worldCanvas.width, DOM.worldCanvas.height);
@@ -721,6 +730,7 @@ function drawWorld() {
     drawOutdoorWorld();
   }
 
+  // 繪製主角調酒師
   drawPlayer();
 
   if (game.currentScene === 'outdoor') {
@@ -731,193 +741,274 @@ function drawWorld() {
   worldCtx.restore();
 }
 
+// -------------------------------------------------------------
+// A. 吉卜力手繪溫馨酒館室內 (Indoor Scene)
+// -------------------------------------------------------------
 function drawTavernInterior() {
-  worldCtx.fillStyle = '#261a10';
-  worldCtx.fillRect(100, 100, INDOOR_WIDTH - 200, INDOOR_HEIGHT - 160);
-
-  worldCtx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-  worldCtx.lineWidth = 2;
-  for (let y = 140; y < INDOOR_HEIGHT - 60; y += 45) {
-    worldCtx.beginPath();
-    worldCtx.moveTo(100, y);
-    worldCtx.lineTo(INDOOR_WIDTH - 100, y);
-    worldCtx.stroke();
+  // 1. 如果已載入吉卜力手繪室內全景圖，全幅繪製 (1100 x 700)
+  if (ASSET_IMAGES.tavernInterior.complete && ASSET_IMAGES.tavernInterior.naturalWidth > 0) {
+    worldCtx.drawImage(ASSET_IMAGES.tavernInterior, 0, 0, INDOOR_WIDTH, INDOOR_HEIGHT);
+  } else {
+    // 備用程序化溫暖木造酒館底圖
+    const bgGrad = worldCtx.createLinearGradient(0, 0, 0, INDOOR_HEIGHT);
+    bgGrad.addColorStop(0, '#3e2714');
+    bgGrad.addColorStop(0.5, '#5c3a21');
+    bgGrad.addColorStop(1, '#2c180b');
+    worldCtx.fillStyle = bgGrad;
+    worldCtx.fillRect(0, 0, INDOOR_WIDTH, INDOOR_HEIGHT);
   }
 
-  worldCtx.fillStyle = '#7a102b';
-  worldCtx.fillRect(300, 360, 500, 240);
-  worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.6)';
-  worldCtx.lineWidth = 3;
-  worldCtx.strokeRect(300, 360, 500, 240);
-
-  // 壁爐
-  worldCtx.fillStyle = '#444';
-  worldCtx.fillRect(160, 240, 90, 110);
-  worldCtx.fillStyle = '#e67e22';
+  // 2. 石砌壁爐燃燒動畫 (x: 190, y: 410)
+  const fireFlicker = Math.sin(Date.now() * 0.009) * 4;
+  const fireGrad = worldCtx.createRadialGradient(190, 410, 4, 190, 400, 35 + fireFlicker);
+  fireGrad.addColorStop(0, '#fffa65');
+  fireGrad.addColorStop(0.35, '#ff9f1a');
+  fireGrad.addColorStop(0.75, '#ff3838');
+  fireGrad.addColorStop(1, 'rgba(255, 56, 56, 0)');
+  worldCtx.fillStyle = fireGrad;
   worldCtx.beginPath();
-  worldCtx.arc(205, 310, 16 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
+  worldCtx.arc(190, 405, 36 + fireFlicker, 0, Math.PI * 2);
   worldCtx.fill();
 
-  // 背後酒架
-  worldCtx.fillStyle = '#3a2416';
-  worldCtx.fillRect(380, 160, 340, 80);
-  for (let bx = 395; bx < 700; bx += 22) {
-    worldCtx.fillStyle = ['#f6c23e', '#e056fd', '#00d2d3', '#ff4757', '#2ed573'][bx % 5];
-    worldCtx.fillRect(bx, 190, 8, 20);
-  }
+  // 壁爐暖光擴散光暈
+  const hearthGlow = worldCtx.createRadialGradient(190, 420, 10, 190, 420, 190);
+  hearthGlow.addColorStop(0, 'rgba(255, 159, 26, 0.28)');
+  hearthGlow.addColorStop(1, 'rgba(255, 159, 26, 0)');
+  worldCtx.fillStyle = hearthGlow;
+  worldCtx.beginPath();
+  worldCtx.arc(190, 420, 190, 0, Math.PI * 2);
+  worldCtx.fill();
 
-  // 吧台
-  worldCtx.fillStyle = '#53351e';
-  worldCtx.fillRect(380, 270, 340, 70);
-  worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.85)';
-  worldCtx.lineWidth = 2.5;
-  worldCtx.strokeRect(380, 270, 340, 70);
-
-  worldCtx.font = 'bold 13px sans-serif';
+  // 3. 吧台亮光與交互提示 (x: 530, y: 310)
+  worldCtx.save();
+  worldCtx.font = 'bold 14px "Noto Sans TC", sans-serif';
   worldCtx.fillStyle = '#f6c23e';
   worldCtx.textAlign = 'center';
-  worldCtx.fillText('★ 傳奇調酒吧台（按空白鍵）★', 550, 312);
+  worldCtx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  worldCtx.shadowBlur = 8;
+  worldCtx.fillText('★ 傳奇調酒吧台（按 空白鍵 開始調製特飲）★', 530, 310);
+  worldCtx.restore();
 
+  // 4. 等候的顧客 NPC (坐於吧台前高腳椅 x: 530, y: 385)
   const cust = CUSTOMERS[game.currentCustomerIndex];
-  worldCtx.fillStyle = '#833471';
+  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
   worldCtx.beginPath();
-  worldCtx.arc(550, 385, 22, 0, Math.PI * 2);
+  worldCtx.ellipse(530, 405, 20, 9, 0, 0, Math.PI * 2);
   worldCtx.fill();
-  worldCtx.strokeStyle = '#f6c23e';
+
+  worldCtx.font = '34px serif';
+  worldCtx.textAlign = 'center';
+  worldCtx.textBaseline = 'middle';
+  worldCtx.fillText(cust.avatar, 530, 380);
+
+  // 顧客標籤氣泡
+  worldCtx.fillStyle = 'rgba(30, 18, 10, 0.85)';
+  worldCtx.strokeStyle = 'var(--amber-gold)';
+  worldCtx.lineWidth = 1.5;
+  worldCtx.beginPath();
+  worldCtx.roundRect(430, 415, 200, 26, 6);
+  worldCtx.fill();
   worldCtx.stroke();
 
-  worldCtx.font = '30px serif';
-  worldCtx.fillText(cust.avatar, 550, 385);
-  worldCtx.font = 'bold 12px sans-serif';
-  worldCtx.fillStyle = '#fff';
-  worldCtx.fillText(`${cust.name}（等待特調中）`, 550, 420);
+  worldCtx.font = 'bold 12px "Noto Sans TC", sans-serif';
+  worldCtx.fillStyle = '#ffeaa7';
+  worldCtx.fillText(`${cust.name}（等待品味）`, 530, 428);
 
-  worldCtx.fillStyle = '#221508';
-  worldCtx.fillRect(510, 640, 80, 20);
-  worldCtx.font = 'bold 12px sans-serif';
+  // 5. 正門出口提示 (x: 550, y: 650)
   worldCtx.fillStyle = '#f6c23e';
-  worldCtx.fillText('🚪 出門到庭院', 550, 630);
+  worldCtx.font = 'bold 13px "Noto Sans TC", sans-serif';
+  worldCtx.textAlign = 'center';
+  worldCtx.fillText('🚪 走至此處按 空白鍵 推門回花園庭院', 550, 655);
 }
 
+// -------------------------------------------------------------
+// B. 吉卜力手繪全景大世界 (Outdoor Scene)
+// -------------------------------------------------------------
 function drawOutdoorWorld() {
-  // 地表底色
-  worldCtx.fillStyle = '#141624';
-  worldCtx.fillRect(0, 0, ZONE_MARKET_MAX_X, WORLD_HEIGHT);
-  worldCtx.fillStyle = '#1d1a2d';
-  worldCtx.fillRect(ZONE_MARKET_MAX_X, 0, ZONE_TAVERN_MAX_X - ZONE_MARKET_MAX_X, WORLD_HEIGHT);
+  // 1. 全景吉卜力手繪大世界背景（覆蓋 3600 x 1000 每一像素，絕無黑邊空隙）
+  if (ASSET_IMAGES.worldMasterBg.complete && ASSET_IMAGES.worldMasterBg.naturalWidth > 0) {
+    worldCtx.drawImage(ASSET_IMAGES.worldMasterBg, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+  } else {
+    // 備用柔和水彩天空與草坪
+    const skyGrad = worldCtx.createLinearGradient(0, 0, 0, 320);
+    skyGrad.addColorStop(0, '#54a0ff');
+    skyGrad.addColorStop(0.7, '#ffeaa7');
+    worldCtx.fillStyle = skyGrad;
+    worldCtx.fillRect(0, 0, WORLD_WIDTH, 320);
 
-  const fGrad = worldCtx.createLinearGradient(FOREST_START_X, 0, WORLD_WIDTH, 0);
-  fGrad.addColorStop(0, '#0c1b17');
-  fGrad.addColorStop(1, '#030a08');
-  worldCtx.fillStyle = fGrad;
-  worldCtx.fillRect(FOREST_START_X, 0, WORLD_WIDTH - FOREST_START_X, WORLD_HEIGHT);
+    const groundGrad = worldCtx.createLinearGradient(0, 320, 0, WORLD_HEIGHT);
+    groundGrad.addColorStop(0, '#78e08f');
+    groundGrad.addColorStop(1, '#20bf6b');
+    worldCtx.fillStyle = groundGrad;
+    worldCtx.fillRect(0, 320, WORLD_WIDTH, WORLD_HEIGHT - 320);
+  }
 
-  // 1. 左側街區店鋪渲染
+  // 2. 左側街區手繪工坊商鋪
   STREET_SHOPS.forEach(shop => {
     if (shop.isGhibliStall && ASSET_IMAGES.fruitStall.complete && ASSET_IMAGES.fruitStall.naturalWidth > 0) {
-      // 繪製手繪柑橘水果工坊
+      // 繪製專屬手繪柑橘工坊
       worldCtx.save();
-      // 繪製微光與投影
-      worldCtx.shadowColor = 'rgba(243, 156, 18, 0.4)';
-      worldCtx.shadowBlur = 18;
-      // 圓角裁切或直接精緻繪出
+      worldCtx.shadowColor = 'rgba(211, 84, 0, 0.45)';
+      worldCtx.shadowBlur = 24;
       worldCtx.drawImage(ASSET_IMAGES.fruitStall, shop.x, shop.y, shop.w, shop.h);
       worldCtx.restore();
 
-      // 招牌標籤
-      worldCtx.font = 'bold 12px sans-serif';
-      worldCtx.fillStyle = '#f6c23e';
+      worldCtx.font = 'bold 13px "Noto Sans TC", sans-serif';
+      worldCtx.fillStyle = '#d35400';
       worldCtx.textAlign = 'center';
-      worldCtx.fillText('★ 柑橘水果工坊 ★', shop.doorX, shop.doorY - 5);
+      worldCtx.fillText('★ 柑橘水果工坊 ★', shop.doorX, shop.doorY - 14);
     } else {
-      // 其他特色商鋪
-      worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      worldCtx.fillRect(shop.x + 6, shop.y + 6, shop.w, shop.h);
+      // 其他手繪歐風木構小洋房
+      worldCtx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      worldCtx.beginPath();
+      worldCtx.roundRect(shop.x + 6, shop.y + 6, shop.w, shop.h, 8);
+      worldCtx.fill();
 
       const colors = {
-        rum: { wall: '#4a2323', roof: '#8b1517', sign: '烈酒蒸餾所' },
-        herbs: { wall: '#1e382b', roof: '#218c74', sign: '草藥晨露屋' },
-        frost: { wall: '#1e2c38', roof: '#3498db', sign: '極地薄荷霜閣' }
-      }[shop.id.replace('shop_', '')] || { wall: '#333', roof: '#555', sign: shop.name };
+        rum: { wall: '#843b22', roof: '#b71540', sign: '烈酒蒸餾廠' },
+        herbs: { wall: '#276749', roof: '#22543d', sign: '草藥晨露屋' },
+        frost: { wall: '#2b6cb0', roof: '#2c5282', sign: '極地薄荷閣' }
+      }[shop.id.replace('shop_', '')] || { wall: '#4a5568', roof: '#2d3748', sign: shop.name };
 
+      // 牆體與屋頂
       worldCtx.fillStyle = colors.wall;
-      worldCtx.fillRect(shop.x, shop.y, shop.w, shop.h);
-      worldCtx.fillStyle = colors.roof;
-      worldCtx.fillRect(shop.x - 4, shop.y - 4, shop.w + 8, 22);
+      worldCtx.beginPath();
+      worldCtx.roundRect(shop.x, shop.y + 25, shop.w, shop.h - 25, 6);
+      worldCtx.fill();
 
-      worldCtx.font = '24px serif';
+      worldCtx.fillStyle = colors.roof;
+      worldCtx.beginPath();
+      worldCtx.moveTo(shop.x - 10, shop.y + 28);
+      worldCtx.lineTo(shop.x + shop.w / 2, shop.y);
+      worldCtx.lineTo(shop.x + shop.w + 10, shop.y + 28);
+      worldCtx.closePath();
+      worldCtx.fill();
+      worldCtx.strokeStyle = '#f6c23e';
+      worldCtx.lineWidth = 2;
+      worldCtx.stroke();
+
+      worldCtx.font = '28px serif';
       worldCtx.textAlign = 'center';
-      worldCtx.fillText(shop.icon, shop.x + shop.w / 2, shop.y + 55);
-      worldCtx.font = 'bold 11px sans-serif';
+      worldCtx.fillText(shop.icon, shop.x + shop.w / 2, shop.y + 70);
+      worldCtx.font = 'bold 12px "Noto Sans TC", sans-serif';
       worldCtx.fillStyle = '#f6c23e';
-      worldCtx.fillText(colors.sign, shop.x + shop.w / 2, shop.y + 78);
+      worldCtx.fillText(colors.sign, shop.x + shop.w / 2, shop.y + 95);
     }
   });
 
-  // 2. 中央手繪酒館小屋
-  const h = TAVERN_HOUSE;
-  if (ASSET_IMAGES.tavernHouse.complete && ASSET_IMAGES.tavernHouse.naturalWidth > 0) {
-    worldCtx.save();
-    worldCtx.shadowColor = 'rgba(246, 194, 62, 0.45)';
-    worldCtx.shadowBlur = 24;
-    worldCtx.drawImage(ASSET_IMAGES.tavernHouse, h.x, h.y, h.w, h.h);
-    worldCtx.restore();
-
-    worldCtx.font = 'bold 13px serif';
-    worldCtx.fillStyle = '#f6c23e';
-    worldCtx.textAlign = 'center';
-    worldCtx.fillText('★ 奇幻調酒館 ★', h.doorX, h.doorY + 22);
+  // 3. 中央酒館動態氛圍（煙囪輕煙、小溪水波光與門前暖光）
+  // 煙囪裊裊白煙
+  const smokeTime = Date.now() * 0.002;
+  worldCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  for (let si = 0; si < 5; si++) {
+    const st = (smokeTime + si * 0.8) % 4;
+    const sx = 1825 + Math.sin(st * 2 + si) * 16 - st * 12;
+    const sy = 160 - st * 45;
+    const sr = 10 + st * 8;
+    worldCtx.beginPath();
+    worldCtx.arc(sx, sy, sr, 0, Math.PI * 2);
+    worldCtx.fill();
   }
 
-  // 3. 右側森林：古橡樹、生物光蘑菇與盤根寶箱秘境
-  const fl = FOREST_LANDMARK;
-  if (ASSET_IMAGES.forestRoots.complete && ASSET_IMAGES.forestRoots.naturalWidth > 0) {
-    worldCtx.save();
-    worldCtx.shadowColor = 'rgba(29, 209, 161, 0.5)';
-    worldCtx.shadowBlur = 28;
-    worldCtx.drawImage(ASSET_IMAGES.forestRoots, fl.x, fl.y, fl.w, fl.h);
-    worldCtx.restore();
+  // 小溪潺潺微光波紋 (x: 1320..1420, y: 550..700)
+  worldCtx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+  worldCtx.lineWidth = 1.5;
+  for (let wy = 560; wy < 700; wy += 28) {
+    const wx = 1340 + Math.sin(Date.now() * 0.003 + wy) * 15;
+    worldCtx.beginPath();
+    worldCtx.moveTo(wx, wy);
+    worldCtx.lineTo(wx + 30, wy);
+    worldCtx.stroke();
   }
 
-  // 森林其他樹幹與寶箱
+  // 酒館正門石階微光投影
+  const doorGlow = worldCtx.createRadialGradient(TAVERN_HOUSE.doorX, TAVERN_HOUSE.doorY, 6, TAVERN_HOUSE.doorX, TAVERN_HOUSE.doorY + 20, 65);
+  doorGlow.addColorStop(0, 'rgba(255, 220, 100, 0.55)');
+  doorGlow.addColorStop(1, 'rgba(255, 220, 100, 0)');
+  worldCtx.fillStyle = doorGlow;
+  worldCtx.beginPath();
+  worldCtx.arc(TAVERN_HOUSE.doorX, TAVERN_HOUSE.doorY + 20, 65, 0, Math.PI * 2);
+  worldCtx.fill();
+
+  // 正門地標標籤
+  worldCtx.save();
+  worldCtx.font = 'bold 14px "Noto Sans TC", sans-serif';
+  worldCtx.fillStyle = '#f6c23e';
+  worldCtx.textAlign = 'center';
+  worldCtx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+  worldCtx.shadowBlur = 8;
+  worldCtx.fillText('★ 奇幻調酒館・自家小店 ★', TAVERN_HOUSE.doorX, TAVERN_HOUSE.doorY + 40);
+  worldCtx.restore();
+
+  // 4. 右側神祕迷霧古林（生物光蘑菇脈動、丁達爾光芒與藏寶箱）
+  // 盤根古樹下夜光蘑菇的柔和呼吸脈動
+  const shroomPulse = 0.4 + 0.25 * Math.sin(Date.now() * 0.003);
+  const shroomGlow = worldCtx.createRadialGradient(FOREST_LANDMARK.x, FOREST_LANDMARK.y, 10, FOREST_LANDMARK.x, FOREST_LANDMARK.y, 90);
+  shroomGlow.addColorStop(0, `rgba(46, 213, 115, ${shroomPulse})`);
+  shroomGlow.addColorStop(0.6, `rgba(15, 185, 177, ${shroomPulse * 0.5})`);
+  shroomGlow.addColorStop(1, 'rgba(46, 213, 115, 0)');
+  worldCtx.fillStyle = shroomGlow;
+  worldCtx.beginPath();
+  worldCtx.arc(FOREST_LANDMARK.x, FOREST_LANDMARK.y, 90, 0, Math.PI * 2);
+  worldCtx.fill();
+
+  // 森林穿透陽光光柱 (God Rays)
+  worldCtx.save();
+  worldCtx.fillStyle = 'rgba(255, 250, 205, 0.07)';
+  for (let rx = 2400; rx < WORLD_WIDTH; rx += 280) {
+    worldCtx.beginPath();
+    worldCtx.moveTo(rx, 0);
+    worldCtx.lineTo(rx + 90, 0);
+    worldCtx.lineTo(rx + 220, WORLD_HEIGHT);
+    worldCtx.lineTo(rx + 50, WORLD_HEIGHT);
+    worldCtx.closePath();
+    worldCtx.fill();
+  }
+  worldCtx.restore();
+
+  // 森林神秘藏寶箱
   FOREST_CHESTS.forEach(chest => {
     if (!chest.opened) {
-      const g = worldCtx.createRadialGradient(chest.x, chest.y, 4, chest.x, chest.y, 30);
-      g.addColorStop(0, 'rgba(246, 194, 62, 0.6)');
+      const g = worldCtx.createRadialGradient(chest.x, chest.y, 4, chest.x, chest.y, 32);
+      g.addColorStop(0, 'rgba(246, 194, 62, 0.7)');
       g.addColorStop(1, 'rgba(246, 194, 62, 0)');
       worldCtx.fillStyle = g;
       worldCtx.beginPath();
-      worldCtx.arc(chest.x, chest.y, 30, 0, Math.PI * 2);
+      worldCtx.arc(chest.x, chest.y, 32, 0, Math.PI * 2);
       worldCtx.fill();
     }
-    worldCtx.font = '26px serif';
+    worldCtx.font = '28px serif';
     worldCtx.textAlign = 'center';
     worldCtx.textBaseline = 'middle';
     worldCtx.fillText(chest.opened ? '📭' : '🎁', chest.x, chest.y);
   });
 
+  // 粗壯古樹樹幹
   FOREST_TREES.forEach(tree => {
-    worldCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     worldCtx.beginPath();
     worldCtx.ellipse(tree.x, tree.y + tree.trunkR, tree.crownR * 0.8, tree.crownR * 0.35, 0, 0, Math.PI * 2);
     worldCtx.fill();
 
-    worldCtx.fillStyle = '#332113';
+    worldCtx.fillStyle = '#3a2414';
     worldCtx.beginPath();
     worldCtx.arc(tree.x, tree.y, tree.trunkR, 0, Math.PI * 2);
     worldCtx.fill();
-    worldCtx.strokeStyle = '#1a0f07';
+    worldCtx.strokeStyle = '#24140a';
     worldCtx.lineWidth = 2.5;
     worldCtx.stroke();
   });
 }
 
+// -------------------------------------------------------------
+// C. 樹冠手繪水彩質感（半透明遮蔽）
+// -------------------------------------------------------------
 function drawTreeCrowns() {
   FOREST_TREES.forEach(tree => {
     worldCtx.save();
     worldCtx.globalAlpha = tree.currentAlpha;
 
-    const cy = tree.y - 28;
+    const cy = tree.y - 30;
     const leafClusters = [
       { ox: 0, oy: 0, r: tree.crownR },
       { ox: -tree.crownR * 0.35, oy: -tree.crownR * 0.25, r: tree.crownR * 0.65 },
@@ -925,17 +1016,17 @@ function drawTreeCrowns() {
     ];
 
     leafClusters.forEach((cl) => {
-      const g = worldCtx.createRadialGradient(tree.x + cl.ox, cy + cl.oy, 5, tree.x + cl.ox, cy + cl.oy, cl.r);
-      g.addColorStop(0, '#10ac84');
-      g.addColorStop(0.7, '#075341');
-      g.addColorStop(1, '#032a21');
+      const g = worldCtx.createRadialGradient(tree.x + cl.ox, cy + cl.oy, 6, tree.x + cl.ox, cy + cl.oy, cl.r);
+      g.addColorStop(0, '#26de81');
+      g.addColorStop(0.65, '#20bf6b');
+      g.addColorStop(1, '#0f7546');
       worldCtx.fillStyle = g;
       worldCtx.beginPath();
       worldCtx.arc(tree.x + cl.ox, cy + cl.oy, cl.r, 0, Math.PI * 2);
       worldCtx.fill();
     });
 
-    worldCtx.strokeStyle = 'rgba(29, 209, 161, 0.4)';
+    worldCtx.strokeStyle = 'rgba(38, 222, 129, 0.45)';
     worldCtx.lineWidth = 2;
     worldCtx.stroke();
 
@@ -943,35 +1034,21 @@ function drawTreeCrowns() {
   });
 }
 
-// 繪製漂浮落葉與魔法氣泡粒子
-function drawAmbientParticles() {
-  AMBIENT_PARTICLES.forEach(p => {
-    if (p.type === 'leaf') {
-      worldCtx.fillStyle = 'rgba(246, 194, 62, 0.65)';
-      worldCtx.beginPath();
-      worldCtx.ellipse(p.x, p.y, p.size, p.size * 0.5, p.sway, 0, Math.PI * 2);
-      worldCtx.fill();
-    } else {
-      worldCtx.fillStyle = 'rgba(0, 210, 211, 0.5)';
-      worldCtx.beginPath();
-      worldCtx.arc(p.x, p.y, p.size * 0.7, 0, Math.PI * 2);
-      worldCtx.fill();
-    }
-  });
-}
-
+// -------------------------------------------------------------
+// D. 主角調酒師手繪造型
+// -------------------------------------------------------------
 function drawPlayer() {
   const p = game.player;
   const bobY = Math.sin(p.walkAnimTime) * 3;
 
-  // 提燈光錐
+  // 1. 溫柔光錐
   worldCtx.save();
   const coneDist = 110;
   const coneAngle = Math.PI / 3.4;
   const lightG = worldCtx.createRadialGradient(p.x, p.y, 8, p.x, p.y, coneDist);
-  lightG.addColorStop(0, 'rgba(246, 194, 62, 0.4)');
-  lightG.addColorStop(0.7, 'rgba(246, 194, 62, 0.1)');
-  lightG.addColorStop(1, 'rgba(246, 194, 62, 0)');
+  lightG.addColorStop(0, 'rgba(255, 234, 167, 0.45)');
+  lightG.addColorStop(0.7, 'rgba(255, 234, 167, 0.12)');
+  lightG.addColorStop(1, 'rgba(255, 234, 167, 0)');
   worldCtx.fillStyle = lightG;
   worldCtx.beginPath();
   worldCtx.moveTo(p.x, p.y);
@@ -980,23 +1057,23 @@ function drawPlayer() {
   worldCtx.fill();
   worldCtx.restore();
 
-  // 螢火伴星
-  worldCtx.fillStyle = 'rgba(0, 210, 211, 0.85)';
+  // 2. 引路螢火小精靈（散發柔和青光）
+  worldCtx.fillStyle = 'rgba(0, 210, 211, 0.9)';
   worldCtx.shadowColor = '#00d2d3';
   worldCtx.shadowBlur = 10;
   worldCtx.beginPath();
-  worldCtx.arc(p.fairyX, p.fairyY, 3.8, 0, Math.PI * 2);
+  worldCtx.arc(p.fairyX, p.fairyY, 4, 0, Math.PI * 2);
   worldCtx.fill();
   worldCtx.shadowBlur = 0;
 
-  // 陰影
-  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  // 3. 腳底水彩柔和陰影
+  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.35)';
   worldCtx.beginPath();
   worldCtx.ellipse(p.x, p.y + 14, 14, 7, 0, 0, Math.PI * 2);
   worldCtx.fill();
 
-  // 酒紅背心調酒師
-  worldCtx.fillStyle = '#800c2a';
+  // 4. 吉卜力水彩風調酒師小人
+  worldCtx.fillStyle = '#800c2a'; // 酒紅背心
   worldCtx.beginPath();
   worldCtx.arc(p.x, p.y + bobY, 15, 0, Math.PI * 2);
   worldCtx.fill();
@@ -1005,14 +1082,13 @@ function drawPlayer() {
   worldCtx.stroke();
 
   worldCtx.fillStyle = '#ffffff';
-  worldCtx.fillRect(p.x - 4, p.y + bobY - 9, 8, 8);
+  worldCtx.fillRect(p.x - 4, p.y + bobY - 9, 8, 8); // 白色領結
 
-  // 提燈手柄
   const lx = p.x + Math.cos(p.angle + 0.5) * 17;
   const ly = p.y + bobY + Math.sin(p.angle + 0.5) * 17;
   worldCtx.fillStyle = '#f6c23e';
   worldCtx.beginPath();
-  worldCtx.arc(lx, ly, 4, 0, Math.PI * 2);
+  worldCtx.arc(lx, ly, 4.5, 0, Math.PI * 2);
   worldCtx.fill();
 
   worldCtx.font = '22px serif';
