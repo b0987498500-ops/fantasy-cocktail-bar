@@ -1,25 +1,36 @@
 /**
- * 奇幻調酒館 (Fantasy Bartender) - 沉浸工坊與生動大地圖引擎
- * 核心升級：
- * 1. 中央專屬酒館小屋：可自由進出室內/室外！室內有壁爐、吧台與客人，調酒完直接賣給客人。
- * 2. 左側逛街街區：生動交錯的 5 間特色獨立商鋪（糖漿、烈酒、草藥、奇果、冰霜），各具建築外觀。
- * 3. 右側生動古林：具象大樹（枝幹紋理、蓬鬆葉團、樹幹碰撞、樹蔭半透明遮蔽），樹後藏寶箱開秘籍。
- * 4. 純淨探索：無小地圖干擾、無多餘快捷鍵阻擋，支援 WASD/點擊/極簡搖桿。
+ * 奇幻調酒館 (Fantasy Bartender) - 吉卜力手繪動畫風格 (Studio Ghibli-inspired)
+ * 整合專屬手繪資產：
+ * 1. 柑橘造型水果糖漿鋪 (fruit_stall.jpg)
+ * 2. 盤根古樹與生物光蘑菇秘境寶箱 (forest_roots.jpg)
+ * 3. 溫馨手繪調酒師酒館小屋 (tavern_house.jpg)
+ * 4. 浮動落葉與微光氣泡環境粒子系統
  */
 
-// ==================== 1. 原料與資料定義 ====================
+// ==================== 1. 預載吉卜力手繪美術資產 ====================
+
+const ASSET_IMAGES = {
+  fruitStall: new Image(),
+  forestRoots: new Image(),
+  tavernHouse: new Image()
+};
+ASSET_IMAGES.fruitStall.src = 'assets/fruit_stall.jpg';
+ASSET_IMAGES.forestRoots.src = 'assets/forest_roots.jpg';
+ASSET_IMAGES.tavernHouse.src = 'assets/tavern_house.jpg';
+
+// ==================== 2. 原料與資料定義 ====================
 
 const INGREDIENTS = {
-  moon_syrup: { id: 'moon_syrup', name: '月光糖漿', icon: '🍯', price: 15, repReq: 0, color: '#f6e58d', flavors: { sweet: 3, sour: 0, spirit: 0, magic: 1, spicy: 0 }, desc: '月華糖露工坊熬製，入口溫潤甘美。', shopId: 'shop_syrup' },
-  dawn_water: { id: 'dawn_water', name: '晨露純水', icon: '💧', price: 10, repReq: 0, color: '#7ed6df', flavors: { sweet: 1, sour: 2, spirit: 0, magic: 0, spicy: 0 }, desc: '精靈草藥坊採集，微酸清新自然。', shopId: 'shop_herbs' },
-  abyss_rum: { id: 'abyss_rum', name: '深淵烈酒', icon: '🍷', price: 25, repReq: 0, color: '#e056fd', flavors: { sweet: 0, sour: 0, spirit: 3, magic: 1, spicy: 1 }, desc: '烈酒蒸餾所特釀，熔岩般狂野辛烈。', shopId: 'shop_rum' },
-  star_fruit: { id: 'star_fruit', name: '星輝果萃', icon: '✨', price: 20, repReq: 10, color: '#ffbe76', flavors: { sweet: 2, sour: 2, spirit: 0, magic: 2, spicy: 0 }, desc: '奇果行鮮採星辰果，注入璀璨流光。', shopId: 'shop_fruit' },
-  frost_mint: { id: 'frost_mint', name: '極地薄荷霜', icon: '🌿', price: 30, repReq: 25, color: '#686de0', flavors: { sweet: 0, sour: 3, spirit: 1, magic: 1, spicy: 0 }, desc: '冰霜閣凝鍊之霜，沁涼透骨醒神。', shopId: 'shop_frost' },
-  dragon_chili: { id: 'dragon_chili', name: '巨龍朝天椒', icon: '🌶️', price: 45, repReq: 40, color: '#ff4757', flavors: { sweet: 0, sour: 0, spirit: 2, magic: 1, spicy: 4 }, desc: '幼龍吐息炙烤，辛香在喉中引爆。', shopId: 'shop_rum' },
-  // 森林寶箱/採集原料
-  glowing_shroom: { id: 'glowing_shroom', name: '夜光幽魂菇', icon: '🍄', price: 0, forestOnly: true, repReq: 0, color: '#2ed573', flavors: { sweet: 0, sour: 1, spirit: 1, magic: 4, spicy: 0 }, desc: '古林深處幽暗菌菇，散發翠綠幻光。' },
-  fairy_tear: { id: 'fairy_tear', name: '妖精之淚', icon: '💎', price: 0, forestOnly: true, repReq: 0, color: '#38ada9', flavors: { sweet: 3, sour: 1, spirit: 0, magic: 4, spicy: 0 }, desc: '林間精靈落下的靈液，極度珍稀純淨。' },
-  phoenix_ember: { id: 'phoenix_ember', name: '不死鳥餘燼', icon: '🪶', price: 0, forestOnly: true, repReq: 0, color: '#ff6348', flavors: { sweet: 1, sour: 0, spirit: 3, magic: 3, spicy: 3 }, desc: '遠古神獸殘留之羽，蘊含不熄之溫。' }
+  moon_syrup: { id: 'moon_syrup', name: '月光糖漿', icon: '🍯', price: 15, repReq: 0, color: '#f6e58d', flavors: { sweet: 3, sour: 0, spirit: 0, magic: 1, spicy: 0 }, desc: '柑橘水果工坊特釀，入口溫潤甘甜。', shopId: 'shop_citrus' },
+  dawn_water: { id: 'dawn_water', name: '晨露純水', icon: '💧', price: 10, repReq: 0, color: '#7ed6df', flavors: { sweet: 1, sour: 2, spirit: 0, magic: 0, spicy: 0 }, desc: '花苞採集純淨晨露，微酸沁涼。', shopId: 'shop_herbs' },
+  abyss_rum: { id: 'abyss_rum', name: '深淵烈酒', icon: '🍷', price: 25, repReq: 0, color: '#e056fd', flavors: { sweet: 0, sour: 0, spirit: 3, magic: 1, spicy: 1 }, desc: '地下熔岩烈火蒸餾，微醺狂烈。', shopId: 'shop_rum' },
+  star_fruit: { id: 'star_fruit', name: '星輝果萃', icon: '✨', price: 20, repReq: 10, color: '#ffbe76', flavors: { sweet: 2, sour: 2, spirit: 0, magic: 2, spicy: 0 }, desc: '柑橘鋪鮮採星辰果，滿溢魔法流光。', shopId: 'shop_citrus' },
+  frost_mint: { id: 'frost_mint', name: '極地薄荷霜', icon: '🌿', price: 30, repReq: 25, color: '#686de0', flavors: { sweet: 0, sour: 3, spirit: 1, magic: 1, spicy: 0 }, desc: '冰原凝鍊薄荷冰霜，沁涼透骨。', shopId: 'shop_frost' },
+  dragon_chili: { id: 'dragon_chili', name: '巨龍朝天椒', icon: '🌶️', price: 45, repReq: 40, color: '#ff4757', flavors: { sweet: 0, sour: 0, spirit: 2, magic: 1, spicy: 4 }, desc: '龍息炙烤朝天椒，喉中爆發辛香。', shopId: 'shop_rum' },
+  // 森林寶箱專屬原料
+  glowing_shroom: { id: 'glowing_shroom', name: '夜光幽魂菇', icon: '🍄', price: 0, forestOnly: true, repReq: 0, color: '#2ed573', flavors: { sweet: 0, sour: 1, spirit: 1, magic: 4, spicy: 0 }, desc: '生物光蘑菇樹下生長，散發翠綠幻光。' },
+  fairy_tear: { id: 'fairy_tear', name: '妖精之淚', icon: '💎', price: 0, forestOnly: true, repReq: 0, color: '#38ada9', flavors: { sweet: 3, sour: 1, spirit: 0, magic: 4, spicy: 0 }, desc: '盤根老樹深處精靈落下的靈液。' },
+  phoenix_ember: { id: 'phoenix_ember', name: '不死鳥餘燼', icon: '🪶', price: 0, forestOnly: true, repReq: 0, color: '#ff6348', flavors: { sweet: 1, sour: 0, spirit: 3, magic: 3, spicy: 3 }, desc: '古老神獸遺留火羽，擁有不滅之溫。' }
 };
 
 const CUSTOMERS = [
@@ -41,14 +52,14 @@ const RECIPES_CATALOG = [
 ];
 
 const CHEST_REWARD_POOL = [
-  { type: 'recipe', name: '翡翠妖精之露', desc: '在密林巨樹後挖掘出的古老卷軸，記載著融合森林靈力的秘方，已永久收錄進你的秘籍圖鑑！', pts: 30, gold: 40 },
-  { type: 'recipe', name: '幽谷幻精靈', desc: '古樸木盒中封存著調酒秘典，解鎖了全新靈性配方！', pts: 25, gold: 35 },
-  { type: 'item', itemId: 'fairy_tear', count: 2, desc: '打開寶箱，裡面靜靜躺著閃爍晨露光澤的妖精之淚！', pts: 15, gold: 30 },
-  { type: 'item', itemId: 'phoenix_ember', count: 2, desc: '箱中封存著熾熱的不死鳥餘燼，微光跳躍！', pts: 20, gold: 45 },
-  { type: 'item', itemId: 'glowing_shroom', count: 3, desc: '箱內盛放著整簇新鮮的夜光幽魂菇，香氣奇異！', pts: 15, gold: 25 }
+  { type: 'recipe', name: '翡翠妖精之露', desc: '在古橡樹盤根交錯深處發現的手繪羊皮古卷，解鎖了失落的高階特調酒譜！', pts: 35, gold: 45 },
+  { type: 'recipe', name: '幽谷幻精靈', desc: '在生物光蘑菇樹蔭下掘得前代調酒師秘錄，已完整收錄至圖鑑！', pts: 30, gold: 40 },
+  { type: 'item', itemId: 'fairy_tear', count: 2, desc: '寶箱中盛放著清澈璀璨的妖精之淚靈液！', pts: 20, gold: 35 },
+  { type: 'item', itemId: 'phoenix_ember', count: 2, desc: '箱中封存著熾烈的不死鳥餘燼，散發溫暖金紅微光！', pts: 25, gold: 50 },
+  { type: 'item', itemId: 'glowing_shroom', count: 3, desc: '箱內生長著整簇剛採摘的夜光幽魂菇！', pts: 15, gold: 25 }
 ];
 
-// ==================== 2. 地圖尺寸與世界定義 ====================
+// ==================== 3. 世界地圖規格與實體佈局 ====================
 
 const WORLD_WIDTH = 3600;
 const WORLD_HEIGHT = 1000;
@@ -58,60 +69,70 @@ const ZONE_TAVERN_MAX_X = 2200;
 const FOREST_START_X = 2200;
 const FOREST_WARN_X = 2700;
 const FOREST_DANGER_X = 3100;
-const FOREST_LOST_X = 3500;
+const FOREST_LOST_X = 3520;
 
-// 室內地圖尺寸 (酒館內部)
 const INDOOR_WIDTH = 1100;
 const INDOOR_HEIGHT = 700;
 
-// 左側逛街街區：5 間獨立特色店鋪（交錯分佈，不再排成直排）
+// 街區特色店鋪（包含柑橘木質手繪水果鋪與其他工坊）
 const STREET_SHOPS = [
-  { id: 'shop_syrup', name: '月華糖露工坊', icon: '🍯', type: 'syrup', x: 300, y: 280, w: 140, h: 100, doorX: 370, doorY: 380, intro: '專精調配月光濃縮糖漿與花蜜。' },
-  { id: 'shop_rum', name: '深淵烈酒蒸餾廠', icon: '🍷', type: 'rum', x: 620, y: 640, w: 150, h: 110, doorX: 695, doorY: 640, intro: '紅磚大煙囪蒸餾廠，飄散濃郁烈酒麥香。' },
-  { id: 'shop_herbs', name: '精靈草藥香料坊', icon: '🌿', type: 'herbs', x: 920, y: 260, w: 140, h: 95, doorX: 990, doorY: 355, intro: '爬滿常春藤的木屋，販售純淨晨露與香料。' },
-  { id: 'shop_fruit', name: '星輝奇果行', icon: '✨', type: 'fruit', x: 440, y: 650, w: 130, h: 90, doorX: 505, doorY: 650, intro: '夜空色琉璃帳篷，陳列閃爍星光的奇異果品。' },
-  { id: 'shop_frost', name: '極地冰霜閣', icon: '🧊', type: 'frost', x: 800, y: 640, w: 135, h: 95, doorX: 865, doorY: 640, intro: '屋簷結著晶瑩冰柱，提供沁涼薄荷與寒冰精粹。' }
+  { id: 'shop_citrus', name: '切片柑橘糖果工坊', icon: '🍊', isGhibliStall: true, x: 380, y: 220, w: 260, h: 260, doorX: 510, doorY: 480, intro: '切片柑橘造型木質棚屋，掛滿果籃與七彩琉璃糖漿罐。' },
+  { id: 'shop_rum', name: '深淵烈酒蒸餾廠', icon: '🍷', isGhibliStall: false, x: 740, y: 640, w: 150, h: 110, doorX: 815, doorY: 640, intro: '紅磚大煙囪蒸餾廠，飄散著濃郁烈酒與橡木香。' },
+  { id: 'shop_herbs', name: '精靈香草晨露屋', icon: '🌿', isGhibliStall: false, x: 960, y: 260, w: 140, h: 95, doorX: 1030, doorY: 355, intro: '綠藤纏繞的木屋，販售純淨晨露與草藥。' },
+  { id: 'shop_frost', name: '極地薄荷霜閣', icon: '🧊', isGhibliStall: false, x: 200, y: 640, w: 140, h: 95, doorX: 270, doorY: 640, intro: '屋簷結著晶瑩冰柱，提供沁涼薄荷精粹。' }
 ];
 
-// 中央：調酒師專屬酒館小屋建築
+// 中央調酒師酒館小店
 const TAVERN_HOUSE = {
-  x: 1560,
-  y: 330,
-  w: 280,
-  h: 180,
-  doorX: 1700,
-  doorY: 510,
-  doorW: 50,
-  doorH: 30
+  x: 1540,
+  y: 200,
+  w: 340,
+  h: 340,
+  doorX: 1710,
+  doorY: 530
 };
 
-// 右側森林：生動大樹陣列（帶有樹皮、樹枝、樹冠層次與實體碰撞）
+// 森林古樹與盤根秘境景點
+const FOREST_LANDMARK = {
+  x: 2720,
+  y: 220,
+  w: 340,
+  h: 340,
+  chestX: 2890,
+  chestY: 480
+};
+
+// 森林生動大樹陣列
 const FOREST_TREES = [
-  { x: 2320, y: 300, trunkR: 24, crownR: 65, currentAlpha: 1, type: 'oak' },
-  { x: 2380, y: 700, trunkR: 26, crownR: 70, currentAlpha: 1, type: 'pine' },
-  { x: 2520, y: 430, trunkR: 28, crownR: 75, currentAlpha: 1, type: 'oak' },
-  { x: 2590, y: 220, trunkR: 22, crownR: 62, currentAlpha: 1, type: 'pine' },
-  { x: 2660, y: 680, trunkR: 26, crownR: 72, currentAlpha: 1, type: 'oak' },
-  { x: 2740, y: 380, trunkR: 30, crownR: 80, currentAlpha: 1, type: 'ancient' }, // 樹後藏寶箱
-  { x: 2890, y: 240, trunkR: 25, crownR: 68, currentAlpha: 1, type: 'pine' },
-  { x: 2940, y: 620, trunkR: 30, crownR: 82, currentAlpha: 1, type: 'ancient' }, // 樹後藏寶箱
-  { x: 3060, y: 420, trunkR: 32, crownR: 85, currentAlpha: 1, type: 'oak' },
-  { x: 3140, y: 210, trunkR: 24, crownR: 66, currentAlpha: 1, type: 'pine' },
-  { x: 3200, y: 740, trunkR: 28, crownR: 76, currentAlpha: 1, type: 'ancient' },
-  { x: 3300, y: 360, trunkR: 34, crownR: 90, currentAlpha: 1, type: 'ancient' }, // 樹後藏寶箱
-  { x: 3380, y: 610, trunkR: 30, crownR: 84, currentAlpha: 1, type: 'oak' },
-  { x: 3460, y: 280, trunkR: 36, crownR: 92, currentAlpha: 1, type: 'ancient' }  // 迷霧深處秘寶
+  { x: 2340, y: 300, trunkR: 24, crownR: 65, currentAlpha: 1 },
+  { x: 2400, y: 700, trunkR: 26, crownR: 70, currentAlpha: 1 },
+  { x: 2540, y: 440, trunkR: 28, crownR: 75, currentAlpha: 1 },
+  { x: 2600, y: 220, trunkR: 22, crownR: 62, currentAlpha: 1 },
+  { x: 3160, y: 340, trunkR: 30, crownR: 80, currentAlpha: 1 }, // 樹後藏寶箱
+  { x: 3260, y: 650, trunkR: 30, crownR: 82, currentAlpha: 1 },
+  { x: 3380, y: 320, trunkR: 34, crownR: 88, currentAlpha: 1 }, // 樹後藏寶箱
+  { x: 3480, y: 680, trunkR: 32, crownR: 85, currentAlpha: 1 }
 ];
 
-// 森林藏寶箱（藏在特定大樹後方）
+// 森林藏寶箱（包含盤根老樹下的核心寶箱與樹後密箱）
 const FOREST_CHESTS = [
-  { id: 'chest_1', name: '老古樹後的木箱', x: 2740, y: 330, opened: false, rewardIndex: 0 },
-  { id: 'chest_2', name: '青苔古樹旁的靈箱', x: 2940, y: 565, opened: false, rewardIndex: 1 },
-  { id: 'chest_3', name: '古林幽徑隱秘寶盒', x: 3300, y: 305, opened: false, rewardIndex: 2 },
-  { id: 'chest_4', name: '迷霧深林遺世秘藏', x: 3460, y: 225, opened: false, rewardIndex: 3 }
+  { id: 'chest_roots', name: '盤根老樹下的古老寶箱', x: 2890, y: 480, opened: false, rewardIndex: 0 },
+  { id: 'chest_tree_1', name: '幽谷古樹後的寶盒', x: 3160, y: 290, opened: false, rewardIndex: 1 },
+  { id: 'chest_tree_2', name: '迷霧深處青苔寶藏', x: 3380, y: 270, opened: false, rewardIndex: 2 }
 ];
 
-// ==================== 3. 遊戲狀態管理 ====================
+// 環境浮動微粒（落葉與魔法氣泡）
+const AMBIENT_PARTICLES = Array.from({ length: 50 }, () => ({
+  x: Math.random() * WORLD_WIDTH,
+  y: Math.random() * WORLD_HEIGHT,
+  size: 2 + Math.random() * 3,
+  speedX: 0.3 + Math.random() * 0.6,
+  speedY: (Math.random() - 0.5) * 0.4,
+  type: Math.random() > 0.5 ? 'leaf' : 'bubble',
+  sway: Math.random() * Math.PI * 2
+}));
+
+// ==================== 4. 遊戲狀態 ====================
 
 class GameState {
   constructor() {
@@ -119,8 +140,7 @@ class GameState {
     this.reputation = 20;
     this.points = 0;
 
-    // 當前場景：'outdoor'（戶外大地圖） 或 'indoor'（酒館小屋內部）
-    this.currentScene = 'outdoor';
+    this.currentScene = 'outdoor'; // 'outdoor' 或 'indoor'
 
     this.inventory = {
       moon_syrup: 4,
@@ -139,17 +159,15 @@ class GameState {
     this.currentCustomerIndex = 0;
     this.unlockedRecipes = new Set(['冒險家特飲']);
 
-    // 調酒台
     this.glassCapacity = 100;
     this.glassLayers = [];
     this.selectedIngredient = null;
     this.isPouring = false;
     this.pourTimer = null;
 
-    // 主角
     this.player = {
-      x: 1700, // 初始在酒館門前
-      y: 560,
+      x: 1710,
+      y: 570,
       radius: 17,
       speed: 3.8,
       sprintSpeed: 6.4,
@@ -158,9 +176,8 @@ class GameState {
       walkAnimTime: 0,
       targetX: null,
       targetY: null,
-      // 伴侶螢火小精靈
-      fairyX: 1680,
-      fairyY: 540,
+      fairyX: 1690,
+      fairyY: 550,
       fairyAngle: 0
     };
 
@@ -179,7 +196,7 @@ class GameState {
 
 const game = new GameState();
 
-// ==================== 4. DOM 快取 ====================
+// ==================== 5. DOM 快取 ====================
 
 const DOM = {
   worldCanvas: document.getElementById('world-canvas'),
@@ -199,7 +216,6 @@ const DOM = {
   joystickBase: document.getElementById('joystick-base'),
   joystickStick: document.getElementById('joystick-stick'),
 
-  // 寶箱開箱彈窗
   chestRewardModal: document.getElementById('chest-reward-modal'),
   chestRewardType: document.getElementById('chest-reward-type'),
   chestRewardTitle: document.getElementById('chest-reward-title'),
@@ -207,7 +223,6 @@ const DOM = {
   chestRewardPill: document.getElementById('chest-reward-pill'),
   closeChestBtn: document.getElementById('close-chest-btn'),
 
-  // 店鋪彈窗
   marketModal: document.getElementById('market-modal'),
   shopModalIcon: document.getElementById('shop-modal-icon'),
   shopModalName: document.getElementById('shop-modal-name'),
@@ -215,7 +230,6 @@ const DOM = {
   closeMarketBtn: document.getElementById('close-market-btn'),
   marketGrid: document.getElementById('market-grid'),
 
-  // 調酒台
   bartenderModal: document.getElementById('bartender-modal'),
   closeBartenderBtn: document.getElementById('close-bartender-btn'),
   orderCustAvatar: document.getElementById('order-cust-avatar'),
@@ -266,7 +280,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// ==================== 5. 操作監聽 ====================
+// ==================== 6. 輸入監聽 ====================
 
 window.addEventListener('keydown', (e) => {
   if (game.keys.hasOwnProperty(e.key)) game.keys[e.key] = true;
@@ -338,37 +352,34 @@ function isAnyModalOpen() {
          !DOM.chestRewardModal.classList.contains('hidden');
 }
 
-// ==================== 6. 物理碰撞與進出屋檢測 ====================
+// ==================== 7. 物理碰撞與進出屋邏輯 ====================
 
 function checkCollision(x, y) {
   if (game.currentScene === 'indoor') {
-    // 室內邊界拘束與吧台碰撞
     if (x < 120 || x > INDOOR_WIDTH - 120 || y < 200 || y > INDOOR_HEIGHT - 60) return true;
-    // 吧台桌身阻擋 (x: 400~700, y: 260~340)
-    if (x > 380 && x < 720 && y > 250 && y < 350) return true;
+    if (x > 380 && x < 720 && y > 250 && y < 350) return true; // 吧台
     return false;
   }
 
-  // 戶外場景
-  // 1. 酒館外屋主體阻擋（除了門口）
+  // 戶外
+  // 1. 酒館外觀阻擋
   const h = TAVERN_HOUSE;
-  if (x > h.x && x < h.x + h.w && y > h.y && y < h.y + h.h - 10) {
-    return true;
+  if (x > h.x + 20 && x < h.x + h.w - 20 && y > h.y + 60 && y < h.y + h.h - 30) {
+    // 門口留出通道
+    if (!(x > h.doorX - 25 && x < h.doorX + 25 && y > h.doorY - 30)) return true;
   }
 
-  // 2. 街區店鋪牆面阻擋
+  // 2. 柑橘店鋪與其他商鋪阻擋
   for (const shop of STREET_SHOPS) {
-    if (x > shop.x && x < shop.x + shop.w && y > shop.y && y < shop.y + shop.h - 10) {
+    if (x > shop.x + 10 && x < shop.x + shop.w - 10 && y > shop.y + 30 && y < shop.y + shop.h - 20) {
       return true;
     }
   }
 
-  // 3. 森林樹幹碰撞阻擋
+  // 3. 森林樹幹阻擋
   for (const tree of FOREST_TREES) {
     const d = Math.hypot(x - tree.x, y - tree.y);
-    if (d < tree.trunkR + game.player.radius) {
-      return true;
-    }
+    if (d < tree.trunkR + game.player.radius) return true;
   }
 
   return false;
@@ -421,14 +432,14 @@ function updatePlayer() {
     game.player.walkAnimTime += 0.22;
   }
 
-  // 螢火小精靈游動跟隨
+  // 螢火小精靈游動
   game.player.fairyAngle += 0.07;
   const fairyTargetX = game.player.x - Math.cos(game.player.angle) * 30 + Math.sin(game.player.fairyAngle) * 15;
   const fairyTargetY = game.player.y - Math.sin(game.player.angle) * 30 - 22 + Math.cos(game.player.fairyAngle) * 12;
   game.player.fairyX += (fairyTargetX - game.player.fairyX) * 0.16;
   game.player.fairyY += (fairyTargetY - game.player.fairyY) * 0.16;
 
-  // 鏡頭平滑居中跟隨
+  // 鏡頭平滑跟隨
   const curWorldW = game.currentScene === 'indoor' ? INDOOR_WIDTH : WORLD_WIDTH;
   const curWorldH = game.currentScene === 'indoor' ? INDOOR_HEIGHT : WORLD_HEIGHT;
 
@@ -442,7 +453,15 @@ function updatePlayer() {
   game.camera.x = Math.max(0, Math.min(maxCamX, game.camera.x));
   game.camera.y = Math.max(0, Math.min(maxCamY, game.camera.y));
 
-  // 戶外樹冠遮蔽透明度運算
+  // 森林落葉與氣泡粒子漂浮
+  AMBIENT_PARTICLES.forEach(p => {
+    p.x += p.speedX;
+    p.sway += 0.04;
+    p.y += Math.sin(p.sway) * 0.4;
+    if (p.x > WORLD_WIDTH) p.x = 0;
+  });
+
+  // 樹冠遮蔽透明度
   if (game.currentScene === 'outdoor') {
     FOREST_TREES.forEach(tree => {
       const d = Math.hypot(game.player.x - tree.x, game.player.y - (tree.y - 25));
@@ -477,7 +496,6 @@ function updateForestMist() {
     DOM.mistVignette.classList.add('extreme');
     startHeartbeat(1000, 0.7);
   } else {
-    // 迷失遣送
     triggerLostInForest();
   }
 }
@@ -504,9 +522,8 @@ function triggerLostInForest() {
   });
   game.collectedInCurrentRun = {};
 
-  // 遣送回酒館大門口
-  game.player.x = 1700;
-  game.player.y = 560;
+  game.player.x = TAVERN_HOUSE.doorX;
+  game.player.y = TAVERN_HOUSE.doorY + 30;
   game.player.targetX = null;
   game.player.targetY = null;
 
@@ -514,19 +531,17 @@ function triggerLostInForest() {
   setTimeout(() => DOM.lostAlertBanner.classList.remove('show'), 3600);
 }
 
-// 檢測當前可互動項目（進入酒館、出門、店鋪買料、吧台調酒、森林寶箱）
+// 檢測當前可互動項目
 function detectNearbyInteraction() {
   let closest = null;
-  let minDist = 75;
+  let minDist = 80;
 
   if (game.currentScene === 'indoor') {
-    // 1. 室內大門（出門）
     const dDoor = Math.hypot(game.player.x - 550, game.player.y - 650);
     if (dDoor < minDist) {
       closest = { type: 'exit_tavern', x: 550, y: 620, prompt: '🚪 推門走到庭院' };
     }
 
-    // 2. 室內吧台（調酒與接待客人）
     const dBar = Math.hypot(game.player.x - 550, game.player.y - 360);
     if (dBar < minDist + 15) {
       const cust = CUSTOMERS[game.currentCustomerIndex];
@@ -535,22 +550,21 @@ function detectNearbyInteraction() {
 
     DOM.currentZoneName.textContent = '🏠 奇幻酒館・溫馨室內';
   } else {
-    // 戶外場景
-    // 1. 酒館大門（進門）
+    // 1. 酒館大門
     const dEnter = Math.hypot(game.player.x - TAVERN_HOUSE.doorX, game.player.y - TAVERN_HOUSE.doorY);
     if (dEnter < minDist) {
       closest = { type: 'enter_tavern', x: TAVERN_HOUSE.doorX, y: TAVERN_HOUSE.doorY - 20, prompt: '🏠 推門進入酒館' };
     }
 
-    // 2. 街區各店鋪
+    // 2. 街區店鋪（包含手繪柑橘店）
     STREET_SHOPS.forEach(shop => {
       const d = Math.hypot(game.player.x - shop.doorX, game.player.y - shop.doorY);
-      if (d < minDist) {
-        closest = { type: 'shop', shop: shop, x: shop.doorX, y: shop.doorY - 15, prompt: `🛒 進入 ${shop.name}` };
+      if (d < minDist + 20) {
+        closest = { type: 'shop', shop: shop, x: shop.doorX, y: shop.doorY - 20, prompt: `🛒 走進 ${shop.name}` };
       }
     });
 
-    // 3. 森林隱藏寶箱
+    // 3. 森林寶箱（包含盤根老樹下的寶箱）
     FOREST_CHESTS.forEach(chest => {
       if (chest.opened) return;
       const d = Math.hypot(game.player.x - chest.x, game.player.y - chest.y);
@@ -559,7 +573,6 @@ function detectNearbyInteraction() {
       }
     });
 
-    // 區域名稱更新
     if (game.player.x < ZONE_MARKET_MAX_X) {
       DOM.currentZoneName.textContent = '🛒 星光夜市・漫步街區';
     } else if (game.player.x < ZONE_TAVERN_MAX_X) {
@@ -588,7 +601,6 @@ function triggerActiveInteraction() {
   const target = game.activeInteractable;
 
   if (target.type === 'enter_tavern') {
-    // 進入酒館室內
     window.soundEngine.playIceClink();
     game.currentScene = 'indoor';
     game.player.x = 550;
@@ -598,7 +610,6 @@ function triggerActiveInteraction() {
     DOM.mistVignette.style.opacity = '0';
     stopHeartbeat();
   } else if (target.type === 'exit_tavern') {
-    // 走出酒館到庭院
     window.soundEngine.playIceClink();
     game.currentScene = 'outdoor';
     game.player.x = TAVERN_HOUSE.doorX;
@@ -614,14 +625,12 @@ function triggerActiveInteraction() {
   }
 }
 
-// 開啟街區特色店鋪
 function openShopModal(shop) {
   DOM.shopModalIcon.textContent = shop.icon;
   DOM.shopModalName.textContent = shop.name;
   DOM.shopModalIntro.textContent = shop.intro;
   DOM.marketGrid.innerHTML = '';
 
-  // 找出該店販售的原料
   const items = Object.values(INGREDIENTS).filter(i => i.shopId === shop.id);
   items.forEach(item => {
     const isLocked = game.reputation < item.repReq;
@@ -668,7 +677,6 @@ window.buyMarketItem = function(itemId, shopId) {
 
 DOM.closeMarketBtn.addEventListener('click', () => DOM.marketModal.classList.add('hidden'));
 
-// 開啟森林隱藏寶箱
 function openTreasureChest(chest) {
   chest.opened = true;
   window.soundEngine.playFanfare();
@@ -700,7 +708,7 @@ function openTreasureChest(chest) {
 }
 DOM.closeChestBtn.addEventListener('click', () => DOM.chestRewardModal.classList.add('hidden'));
 
-// ==================== 7. 2D 畫布繪製系統 ====================
+// ==================== 8. 2D 畫布繪製系統 ====================
 
 function drawWorld() {
   worldCtx.clearRect(0, 0, DOM.worldCanvas.width, DOM.worldCanvas.height);
@@ -713,24 +721,20 @@ function drawWorld() {
     drawOutdoorWorld();
   }
 
-  // 繪製主角調酒師
   drawPlayer();
 
-  // 若在戶外，在大樹圖層頂部繪製半透明樹冠以呈現遮蔽
   if (game.currentScene === 'outdoor') {
     drawTreeCrowns();
+    drawAmbientParticles();
   }
 
   worldCtx.restore();
 }
 
-// 繪製酒館溫馨室內場景
 function drawTavernInterior() {
-  // 木質地板
-  worldCtx.fillStyle = '#2c1e14';
+  worldCtx.fillStyle = '#261a10';
   worldCtx.fillRect(100, 100, INDOOR_WIDTH - 200, INDOOR_HEIGHT - 160);
 
-  // 地板木紋橫線
   worldCtx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
   worldCtx.lineWidth = 2;
   for (let y = 140; y < INDOOR_HEIGHT - 60; y += 45) {
@@ -740,22 +744,21 @@ function drawTavernInterior() {
     worldCtx.stroke();
   }
 
-  // 奢華大紅金邊地毯
-  worldCtx.fillStyle = '#800c2a';
+  worldCtx.fillStyle = '#7a102b';
   worldCtx.fillRect(300, 360, 500, 240);
   worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.6)';
   worldCtx.lineWidth = 3;
   worldCtx.strokeRect(300, 360, 500, 240);
 
-  // 石壁爐（有火苗）
-  worldCtx.fillStyle = '#4b4b4b';
+  // 壁爐
+  worldCtx.fillStyle = '#444';
   worldCtx.fillRect(160, 240, 90, 110);
   worldCtx.fillStyle = '#e67e22';
   worldCtx.beginPath();
   worldCtx.arc(205, 310, 16 + Math.sin(Date.now() * 0.01) * 3, 0, Math.PI * 2);
   worldCtx.fill();
 
-  // 背後高聳酒櫃（擺滿發光彩色酒瓶）
+  // 背後酒架
   worldCtx.fillStyle = '#3a2416';
   worldCtx.fillRect(380, 160, 340, 80);
   for (let bx = 395; bx < 700; bx += 22) {
@@ -763,7 +766,7 @@ function drawTavernInterior() {
     worldCtx.fillRect(bx, 190, 8, 20);
   }
 
-  // 豪華調酒吧台桌
+  // 吧台
   worldCtx.fillStyle = '#53351e';
   worldCtx.fillRect(380, 270, 340, 70);
   worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.85)';
@@ -773,9 +776,8 @@ function drawTavernInterior() {
   worldCtx.font = 'bold 13px sans-serif';
   worldCtx.fillStyle = '#f6c23e';
   worldCtx.textAlign = 'center';
-  worldCtx.fillText('★ 傳奇調酒操作台（按空白鍵）★', 550, 312);
+  worldCtx.fillText('★ 傳奇調酒吧台（按空白鍵）★', 550, 312);
 
-  // 吧台高腳椅與顧客 NPC
   const cust = CUSTOMERS[game.currentCustomerIndex];
   worldCtx.fillStyle = '#833471';
   worldCtx.beginPath();
@@ -790,7 +792,6 @@ function drawTavernInterior() {
   worldCtx.fillStyle = '#fff';
   worldCtx.fillText(`${cust.name}（等待特調中）`, 550, 420);
 
-  // 出門石階梯與木門
   worldCtx.fillStyle = '#221508';
   worldCtx.fillRect(510, 640, 80, 20);
   worldCtx.font = 'bold 12px sans-serif';
@@ -798,115 +799,87 @@ function drawTavernInterior() {
   worldCtx.fillText('🚪 出門到庭院', 550, 630);
 }
 
-// 繪製戶外大地圖（左街區、中酒館小屋外觀、右古林）
 function drawOutdoorWorld() {
-  // 1. 地面
-  worldCtx.fillStyle = '#121422'; // 街區石磚
+  // 地表底色
+  worldCtx.fillStyle = '#141624';
   worldCtx.fillRect(0, 0, ZONE_MARKET_MAX_X, WORLD_HEIGHT);
-
-  worldCtx.fillStyle = '#1a1829'; // 酒館庭院
+  worldCtx.fillStyle = '#1d1a2d';
   worldCtx.fillRect(ZONE_MARKET_MAX_X, 0, ZONE_TAVERN_MAX_X - ZONE_MARKET_MAX_X, WORLD_HEIGHT);
 
   const fGrad = worldCtx.createLinearGradient(FOREST_START_X, 0, WORLD_WIDTH, 0);
-  fGrad.addColorStop(0, '#0a1613');
-  fGrad.addColorStop(1, '#020806');
-  worldCtx.fillStyle = fGrad; // 古林泥草地
+  fGrad.addColorStop(0, '#0c1b17');
+  fGrad.addColorStop(1, '#030a08');
+  worldCtx.fillStyle = fGrad;
   worldCtx.fillRect(FOREST_START_X, 0, WORLD_WIDTH - FOREST_START_X, WORLD_HEIGHT);
 
-  // 蜿蜒泥徑
-  worldCtx.strokeStyle = 'rgba(45, 65, 48, 0.4)';
-  worldCtx.lineWidth = 50;
-  worldCtx.lineCap = 'round';
-  worldCtx.beginPath();
-  worldCtx.moveTo(FOREST_START_X, 550);
-  worldCtx.quadraticCurveTo(2700, 520, 2900, 610);
-  worldCtx.quadraticCurveTo(3180, 680, 3420, 440);
-  worldCtx.stroke();
-
-  // 2. 街區 5 間生動特色商鋪（交錯散落）
+  // 1. 左側街區店鋪渲染
   STREET_SHOPS.forEach(shop => {
-    // 建築陰影
-    worldCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    worldCtx.fillRect(shop.x + 8, shop.y + 8, shop.w, shop.h);
+    if (shop.isGhibliStall && ASSET_IMAGES.fruitStall.complete && ASSET_IMAGES.fruitStall.naturalWidth > 0) {
+      // 繪製手繪柑橘水果工坊
+      worldCtx.save();
+      // 繪製微光與投影
+      worldCtx.shadowColor = 'rgba(243, 156, 18, 0.4)';
+      worldCtx.shadowBlur = 18;
+      // 圓角裁切或直接精緻繪出
+      worldCtx.drawImage(ASSET_IMAGES.fruitStall, shop.x, shop.y, shop.w, shop.h);
+      worldCtx.restore();
 
-    // 依店鋪種類上不同色彩的外牆
-    const colors = {
-      syrup: { wall: '#3d2b1f', roof: '#d35400', sign: '月華糖露' },
-      rum: { wall: '#4a2323', roof: '#7b1113', sign: '烈酒蒸餾' },
-      herbs: { wall: '#1e382b', roof: '#218c74', sign: '草藥香料' },
-      fruit: { wall: '#272042', roof: '#5f27cd', sign: '星輝奇果' },
-      frost: { wall: '#1e2c38', roof: '#3498db', sign: '極地冰霜' }
-    };
-    const c = colors[shop.type];
+      // 招牌標籤
+      worldCtx.font = 'bold 12px sans-serif';
+      worldCtx.fillStyle = '#f6c23e';
+      worldCtx.textAlign = 'center';
+      worldCtx.fillText('★ 柑橘水果工坊 ★', shop.doorX, shop.doorY - 5);
+    } else {
+      // 其他特色商鋪
+      worldCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      worldCtx.fillRect(shop.x + 6, shop.y + 6, shop.w, shop.h);
 
-    worldCtx.fillStyle = c.wall;
-    worldCtx.fillRect(shop.x, shop.y, shop.w, shop.h);
+      const colors = {
+        rum: { wall: '#4a2323', roof: '#8b1517', sign: '烈酒蒸餾所' },
+        herbs: { wall: '#1e382b', roof: '#218c74', sign: '草藥晨露屋' },
+        frost: { wall: '#1e2c38', roof: '#3498db', sign: '極地薄荷霜閣' }
+      }[shop.id.replace('shop_', '')] || { wall: '#333', roof: '#555', sign: shop.name };
 
-    // 屋頂與瓦片感
-    worldCtx.fillStyle = c.roof;
-    worldCtx.fillRect(shop.x - 4, shop.y - 6, shop.w + 8, 26);
-    worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.6)';
-    worldCtx.lineWidth = 1.8;
-    worldCtx.strokeRect(shop.x, shop.y, shop.w, shop.h);
+      worldCtx.fillStyle = colors.wall;
+      worldCtx.fillRect(shop.x, shop.y, shop.w, shop.h);
+      worldCtx.fillStyle = colors.roof;
+      worldCtx.fillRect(shop.x - 4, shop.y - 4, shop.w + 8, 22);
 
-    // 店鋪木門與招牌
-    worldCtx.fillStyle = '#181008';
-    worldCtx.fillRect(shop.doorX - 14, shop.y + shop.h - 32, 28, 32);
-
-    worldCtx.font = '24px serif';
-    worldCtx.textAlign = 'center';
-    worldCtx.fillText(shop.icon, shop.x + shop.w / 2, shop.y + 56);
-
-    worldCtx.font = 'bold 11px sans-serif';
-    worldCtx.fillStyle = '#f6c23e';
-    worldCtx.fillText(c.sign, shop.x + shop.w / 2, shop.y + 78);
+      worldCtx.font = '24px serif';
+      worldCtx.textAlign = 'center';
+      worldCtx.fillText(shop.icon, shop.x + shop.w / 2, shop.y + 55);
+      worldCtx.font = 'bold 11px sans-serif';
+      worldCtx.fillStyle = '#f6c23e';
+      worldCtx.fillText(colors.sign, shop.x + shop.w / 2, shop.y + 78);
+    }
   });
 
-  // 3. 中央奇幻酒館小屋（立體外觀）
+  // 2. 中央手繪酒館小屋
   const h = TAVERN_HOUSE;
-  worldCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-  worldCtx.fillRect(h.x + 10, h.y + 10, h.w, h.h);
+  if (ASSET_IMAGES.tavernHouse.complete && ASSET_IMAGES.tavernHouse.naturalWidth > 0) {
+    worldCtx.save();
+    worldCtx.shadowColor = 'rgba(246, 194, 62, 0.45)';
+    worldCtx.shadowBlur = 24;
+    worldCtx.drawImage(ASSET_IMAGES.tavernHouse, h.x, h.y, h.w, h.h);
+    worldCtx.restore();
 
-  // 磚木牆身
-  worldCtx.fillStyle = '#3a271c';
-  worldCtx.fillRect(h.x, h.y, h.w, h.h);
+    worldCtx.font = 'bold 13px serif';
+    worldCtx.fillStyle = '#f6c23e';
+    worldCtx.textAlign = 'center';
+    worldCtx.fillText('★ 奇幻調酒館 ★', h.doorX, h.doorY + 22);
+  }
 
-  // 雙層斜屋頂
-  worldCtx.fillStyle = '#800c2a'; // 酒紅瓦
-  worldCtx.beginPath();
-  worldCtx.moveTo(h.x - 12, h.y + 20);
-  worldCtx.lineTo(h.x + h.w / 2, h.y - 30);
-  worldCtx.lineTo(h.x + h.w + 12, h.y + 20);
-  worldCtx.closePath();
-  worldCtx.fill();
-  worldCtx.strokeStyle = 'rgba(246, 194, 62, 0.8)';
-  worldCtx.lineWidth = 2.5;
-  worldCtx.stroke();
+  // 3. 右側森林：古橡樹、生物光蘑菇與盤根寶箱秘境
+  const fl = FOREST_LANDMARK;
+  if (ASSET_IMAGES.forestRoots.complete && ASSET_IMAGES.forestRoots.naturalWidth > 0) {
+    worldCtx.save();
+    worldCtx.shadowColor = 'rgba(29, 209, 161, 0.5)';
+    worldCtx.shadowBlur = 28;
+    worldCtx.drawImage(ASSET_IMAGES.forestRoots, fl.x, fl.y, fl.w, fl.h);
+    worldCtx.restore();
+  }
 
-  // 煙囪與裊裊白煙
-  worldCtx.fillStyle = '#4b4b4b';
-  worldCtx.fillRect(h.x + 35, h.y - 45, 24, 40);
-  worldCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  worldCtx.beginPath();
-  worldCtx.arc(h.x + 47 + Math.sin(Date.now() * 0.002) * 5, h.y - 55, 7, 0, Math.PI * 2);
-  worldCtx.fill();
-
-  // 酒館雙開木大門（門內透出暖光）
-  worldCtx.fillStyle = '#f6c23e';
-  worldCtx.fillRect(h.doorX - 22, h.doorY - 32, 44, 32);
-  worldCtx.fillStyle = '#221508';
-  worldCtx.fillRect(h.doorX - 20, h.doorY - 30, 40, 30);
-
-  worldCtx.font = 'bold 13px serif';
-  worldCtx.fillStyle = '#f6c23e';
-  worldCtx.textAlign = 'center';
-  worldCtx.fillText('★ 奇幻調酒館・自家小店 ★', h.x + h.w / 2, h.y + 55);
-
-  worldCtx.font = '11px sans-serif';
-  worldCtx.fillStyle = '#e8d8b8';
-  worldCtx.fillText('（走近按空白鍵進屋調酒）', h.doorX, h.doorY + 22);
-
-  // 4. 森林樹幹與地面寶箱
+  // 森林其他樹幹與寶箱
   FOREST_CHESTS.forEach(chest => {
     if (!chest.opened) {
       const g = worldCtx.createRadialGradient(chest.x, chest.y, 4, chest.x, chest.y, 30);
@@ -923,40 +896,35 @@ function drawOutdoorWorld() {
     worldCtx.fillText(chest.opened ? '📭' : '🎁', chest.x, chest.y);
   });
 
-  // 樹幹（底部）
   FOREST_TREES.forEach(tree => {
     worldCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     worldCtx.beginPath();
     worldCtx.ellipse(tree.x, tree.y + tree.trunkR, tree.crownR * 0.8, tree.crownR * 0.35, 0, 0, Math.PI * 2);
     worldCtx.fill();
 
-    // 粗糙樹皮與樹根
-    worldCtx.fillStyle = '#301f11';
+    worldCtx.fillStyle = '#332113';
     worldCtx.beginPath();
     worldCtx.arc(tree.x, tree.y, tree.trunkR, 0, Math.PI * 2);
     worldCtx.fill();
-    worldCtx.strokeStyle = '#1b1108';
+    worldCtx.strokeStyle = '#1a0f07';
     worldCtx.lineWidth = 2.5;
     worldCtx.stroke();
   });
 }
 
-// 繪製大樹樹冠（置於主角之上，支援透明度遮蔽）
 function drawTreeCrowns() {
   FOREST_TREES.forEach(tree => {
     worldCtx.save();
     worldCtx.globalAlpha = tree.currentAlpha;
 
     const cy = tree.y - 28;
-    // 多團蓬鬆樹葉組合
     const leafClusters = [
       { ox: 0, oy: 0, r: tree.crownR },
       { ox: -tree.crownR * 0.35, oy: -tree.crownR * 0.25, r: tree.crownR * 0.65 },
-      { ox: tree.crownR * 0.35, oy: -tree.crownR * 0.2, r: tree.crownR * 0.65 },
-      { ox: 0, oy: -tree.crownR * 0.45, r: tree.crownR * 0.55 }
+      { ox: tree.crownR * 0.35, oy: -tree.crownR * 0.2, r: tree.crownR * 0.65 }
     ];
 
-    leafClusters.forEach((cl, i) => {
+    leafClusters.forEach((cl) => {
       const g = worldCtx.createRadialGradient(tree.x + cl.ox, cy + cl.oy, 5, tree.x + cl.ox, cy + cl.oy, cl.r);
       g.addColorStop(0, '#10ac84');
       g.addColorStop(0.7, '#075341');
@@ -975,12 +943,28 @@ function drawTreeCrowns() {
   });
 }
 
-// 繪製主角調酒師
+// 繪製漂浮落葉與魔法氣泡粒子
+function drawAmbientParticles() {
+  AMBIENT_PARTICLES.forEach(p => {
+    if (p.type === 'leaf') {
+      worldCtx.fillStyle = 'rgba(246, 194, 62, 0.65)';
+      worldCtx.beginPath();
+      worldCtx.ellipse(p.x, p.y, p.size, p.size * 0.5, p.sway, 0, Math.PI * 2);
+      worldCtx.fill();
+    } else {
+      worldCtx.fillStyle = 'rgba(0, 210, 211, 0.5)';
+      worldCtx.beginPath();
+      worldCtx.arc(p.x, p.y, p.size * 0.7, 0, Math.PI * 2);
+      worldCtx.fill();
+    }
+  });
+}
+
 function drawPlayer() {
   const p = game.player;
   const bobY = Math.sin(p.walkAnimTime) * 3;
 
-  // 1. 提燈扇形光錐
+  // 提燈光錐
   worldCtx.save();
   const coneDist = 110;
   const coneAngle = Math.PI / 3.4;
@@ -988,7 +972,6 @@ function drawPlayer() {
   lightG.addColorStop(0, 'rgba(246, 194, 62, 0.4)');
   lightG.addColorStop(0.7, 'rgba(246, 194, 62, 0.1)');
   lightG.addColorStop(1, 'rgba(246, 194, 62, 0)');
-
   worldCtx.fillStyle = lightG;
   worldCtx.beginPath();
   worldCtx.moveTo(p.x, p.y);
@@ -997,7 +980,7 @@ function drawPlayer() {
   worldCtx.fill();
   worldCtx.restore();
 
-  // 2. 引路螢火小精靈
+  // 螢火伴星
   worldCtx.fillStyle = 'rgba(0, 210, 211, 0.85)';
   worldCtx.shadowColor = '#00d2d3';
   worldCtx.shadowBlur = 10;
@@ -1006,13 +989,13 @@ function drawPlayer() {
   worldCtx.fill();
   worldCtx.shadowBlur = 0;
 
-  // 3. 腳底柔和陰影
+  // 陰影
   worldCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   worldCtx.beginPath();
   worldCtx.ellipse(p.x, p.y + 14, 14, 7, 0, 0, Math.PI * 2);
   worldCtx.fill();
 
-  // 4. 調酒師主體（酒紅背心 + 白圍裙領 + 提燈）
+  // 酒紅背心調酒師
   worldCtx.fillStyle = '#800c2a';
   worldCtx.beginPath();
   worldCtx.arc(p.x, p.y + bobY, 15, 0, Math.PI * 2);
@@ -1024,12 +1007,12 @@ function drawPlayer() {
   worldCtx.fillStyle = '#ffffff';
   worldCtx.fillRect(p.x - 4, p.y + bobY - 9, 8, 8);
 
-  // 提燈
-  const lanternX = p.x + Math.cos(p.angle + 0.5) * 17;
-  const lanternY = p.y + bobY + Math.sin(p.angle + 0.5) * 17;
+  // 提燈手柄
+  const lx = p.x + Math.cos(p.angle + 0.5) * 17;
+  const ly = p.y + bobY + Math.sin(p.angle + 0.5) * 17;
   worldCtx.fillStyle = '#f6c23e';
   worldCtx.beginPath();
-  worldCtx.arc(lanternX, lanternY, 4, 0, Math.PI * 2);
+  worldCtx.arc(lx, ly, 4, 0, Math.PI * 2);
   worldCtx.fill();
 
   worldCtx.font = '22px serif';
@@ -1038,7 +1021,7 @@ function drawPlayer() {
   worldCtx.fillText('🧙‍♂️', p.x, p.y + bobY - 2);
 }
 
-// ==================== 8. 調酒操作台與結算 ====================
+// ==================== 9. 調酒與結算 ====================
 
 function updateResourceDisplays() {
   DOM.goldDisplay.textContent = game.gold;
@@ -1262,7 +1245,6 @@ function updateFlavorHUD() {
   DOM.hudSpicy.style.width = `${Math.min(100, (totals.spicy / maxVal) * 100)}%`;
 }
 
-// 完成調酒並呈送客人結算
 DOM.finishDrinkBtn.addEventListener('click', () => {
   const totalVol = getTotalCocktailVolume();
   if (totalVol < 15) return;
@@ -1367,17 +1349,14 @@ DOM.recipeBookBtn.addEventListener('click', () => {
   });
   DOM.recipeBookModal.classList.remove('hidden');
 });
-
-DOM.closeBookBtn.addEventListener('click', () => {
-  DOM.recipeBookModal.classList.add('hidden');
-});
+DOM.closeBookBtn.addEventListener('click', () => DOM.recipeBookModal.classList.add('hidden'));
 
 DOM.audioToggleBtn.addEventListener('click', () => {
   const muted = window.soundEngine.toggleMute();
   DOM.audioToggleBtn.textContent = muted ? '🔇' : '🔊';
 });
 
-// ==================== 9. 主循環 ====================
+// ==================== 10. 主遊戲循環 ====================
 
 function gameLoop() {
   updatePlayer();
