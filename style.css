@@ -1,28 +1,28 @@
 /* =========================================================
-   奇幻調酒館 (Fantasy Bartender) - 2D 俯視自由走動世界樣式
-   參照參考截圖風格：深色高質感 + 金色典雅線框 + 虛擬搖桿與 HUD
+   奇幻調酒館 (Fantasy Bartender) - 原創奇幻冒險風格樣式表
+   揮別科技機械同心圓，走向溫暖琥珀、秘境翡翠與星光琉璃繪本風
    ========================================================= */
 
 :root {
-  --bg-dark: #080911;
-  --panel-bg: rgba(14, 18, 32, 0.82);
-  --panel-border: rgba(249, 202, 36, 0.45);
-  --panel-border-subtle: rgba(255, 255, 255, 0.12);
-  
-  --gold: #f9ca24;
-  --gold-glow: rgba(249, 202, 36, 0.4);
-  --magic: #a55eea;
+  --bg-deep: #0a0d16;
+  --panel-wood: rgba(26, 21, 35, 0.88);
+  --panel-border: rgba(230, 180, 80, 0.55);
+  --panel-inner-glow: rgba(250, 215, 120, 0.1);
+
+  --amber-gold: #f6c23e;
+  --amber-glow: rgba(246, 194, 62, 0.45);
+  --forest-emerald: #1dd1a1;
+  --forest-glow: rgba(29, 209, 161, 0.4);
+  --magic-violet: #a55eea;
   --magic-glow: rgba(165, 94, 234, 0.45);
-  --cyan: #00d2d3;
-  --cyan-glow: rgba(0, 210, 211, 0.4);
-  --red: #ff4757;
-  --green: #2ecc71;
+  --crystal-cyan: #00d2d3;
 
-  --text-main: #f5f6fa;
-  --text-dim: #9aa0a6;
+  --text-bright: #fdfdfd;
+  --text-parchment: #e8d8b8;
+  --text-muted: #9aa0b2;
 
-  --font-title: 'Cinzel', serif;
-  --font-sans: 'Noto Sans TC', sans-serif;
+  --font-serif: 'Playfair Display', 'Cinzel', serif;
+  --font-tc: 'Noto Sans TC', sans-serif;
 }
 
 * {
@@ -38,13 +38,12 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--bg-dark);
-  font-family: var(--font-sans);
-  color: var(--text-main);
-  position: relative;
+  background: var(--bg-deep);
+  font-family: var(--font-tc);
+  color: var(--text-bright);
 }
 
-/* ================== 全螢幕 2D 遊戲世界畫布 ================== */
+/* ================== 全螢幕遊戲世界畫布 ================== */
 #world-canvas {
   position: absolute;
   top: 0;
@@ -53,10 +52,9 @@ html, body {
   height: 100%;
   display: block;
   z-index: 1;
-  cursor: crosshair;
 }
 
-/* ================== 迷霧與心跳動態遮罩 ================== */
+/* ================== 森林迷霧收窄與遣返警告 ================== */
 .mist-vignette {
   position: absolute;
   inset: 0;
@@ -64,29 +62,29 @@ html, body {
   z-index: 5;
   transition: opacity 0.4s ease;
   opacity: 0;
-  box-shadow: inset 0 0 140px 60px rgba(165, 94, 234, 0.4);
+  box-shadow: inset 0 0 150px 70px rgba(165, 94, 234, 0.45);
 }
 
 .mist-vignette.danger {
   opacity: 0.85;
-  box-shadow: inset 0 0 200px 100px rgba(255, 71, 87, 0.8);
-  animation: pulseMist 1.2s infinite alternate ease-in-out;
+  box-shadow: inset 0 0 210px 110px rgba(235, 77, 75, 0.85);
+  animation: breathMist 1.4s infinite alternate ease-in-out;
 }
 
 .mist-vignette.extreme {
   opacity: 0.98;
-  box-shadow: inset 0 0 280px 150px rgba(235, 59, 90, 0.95);
-  animation: pulseMistFast 0.7s infinite alternate ease-in-out;
+  box-shadow: inset 0 0 290px 160px rgba(186, 24, 27, 0.95);
+  animation: breathMistFast 0.8s infinite alternate ease-in-out;
 }
 
-@keyframes pulseMist {
+@keyframes breathMist {
   0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(1.02); opacity: 0.9; }
+  100% { transform: scale(1.02); opacity: 0.92; }
 }
 
-@keyframes pulseMistFast {
+@keyframes breathMistFast {
   0% { transform: scale(0.99); opacity: 0.85; }
-  100% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1.04); opacity: 1; }
 }
 
 .lost-alert-banner {
@@ -94,41 +92,34 @@ html, body {
   top: 90px;
   left: 50%;
   transform: translateX(-50%) translateY(-180%);
-  background: rgba(235, 59, 90, 0.94);
-  border: 2px solid #ff6b81;
-  padding: 16px 28px;
-  border-radius: 16px;
-  color: #fff;
   z-index: 99;
-  text-align: center;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
   transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-  max-width: 90%;
   pointer-events: none;
+  max-width: 90%;
 }
 
 .lost-alert-banner.show {
   transform: translateX(-50%) translateY(0);
 }
 
-.lost-icon {
+.lost-alert-card {
+  background: linear-gradient(135deg, rgba(80, 20, 30, 0.95), rgba(40, 10, 20, 0.98));
+  border: 2px solid #eb4d4b;
+  border-radius: 16px;
+  padding: 16px 28px;
+  text-align: center;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(235, 77, 75, 0.4);
+}
+
+.lost-crest {
   font-size: 1.2rem;
   font-weight: 800;
   display: block;
   margin-bottom: 6px;
+  color: #ff7979;
 }
 
-/* ================== 通用玻璃擬態面板 ================== */
-.glass-panel {
-  background: var(--panel-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--panel-border);
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(249, 202, 36, 0.08);
-}
-
-/* ================== HUD 覆蓋層總體佈局 ================== */
+/* ================== 原創奇幻 UI 頂部列 ================== */
 .ui-overlay {
   position: absolute;
   inset: 0;
@@ -137,159 +128,162 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 14px 20px;
 }
 
-/* 頂部 Header 列 */
-.hud-header {
+.fantasy-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   pointer-events: auto;
 }
 
-/* 小地圖面板（參照截圖左上角） */
-.minimap-panel {
-  padding: 8px 12px;
+/* 1. 左側星盤羅盤小地圖 */
+.astrolabe-panel {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 140px;
+  background: var(--panel-wood);
+  border: 1.5px solid var(--panel-border);
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 10px var(--panel-inner-glow);
+  backdrop-filter: blur(8px);
 }
 
-.minimap-header {
+.astrolabe-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--gold);
 }
 
-.minimap-canvas-wrap {
+.astrolabe-icon { font-size: 1rem; }
+
+.zone-name-text {
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--amber-gold);
+}
+
+.astrolabe-radar-frame {
   border-radius: 6px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 10, 18, 0.7);
   line-height: 0;
 }
 
-#minimap-canvas {
-  display: block;
-}
+#minimap-canvas { display: block; }
 
-/* 中央資源三元條 */
-.economy-hud {
+/* 2. 中央資源晶球（原創立體晶球感） */
+.alchemy-resources {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 18px;
-  border-radius: 24px;
+  background: var(--panel-wood);
+  border: 1.5px solid var(--panel-border);
+  padding: 6px 18px;
+  border-radius: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
 }
 
-.stat-badge {
+.res-capsule {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 0.88rem;
 }
 
-.stat-icon {
-  font-size: 1.15rem;
-}
+.orb-icon { font-size: 1.2rem; }
+.orb-name { color: var(--text-parchment); font-size: 0.76rem; }
 
-.stat-title {
-  color: var(--text-dim);
-  font-size: 0.76rem;
-}
-
-.stat-num {
+.orb-val {
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
   color: #fff;
 }
 
-.stat-badge.gold .stat-num { color: var(--gold); }
-.stat-badge.rep .stat-num { color: var(--magic); }
-.stat-badge.pts .stat-num { color: var(--cyan); }
+.gold-orb .orb-val { color: var(--amber-gold); }
+.rep-orb .orb-val { color: var(--magic-violet); }
+.pts-orb .orb-val { color: var(--crystal-cyan); }
 
-/* 右側功能按鈕 */
-.quick-tools {
+/* 3. 右側功能按鈕（羊皮紙質感） */
+.grimoire-actions {
   display: flex;
   gap: 8px;
 }
 
-.hud-icon-btn {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  color: #fff;
-  padding: 8px 14px;
+.parchment-btn {
+  background: linear-gradient(135deg, #2c223b, #1b1626);
+  border: 1.5px solid var(--panel-border);
+  color: var(--text-parchment);
+  padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
 }
 
-.hud-icon-btn:hover {
-  background: rgba(45, 52, 78, 0.9);
+.parchment-btn:hover {
   transform: translateY(-2px);
-  border-color: var(--gold);
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 0 16px var(--amber-glow);
 }
 
-/* 森林深度即時指標（右上角邊緣） */
-.forest-danger-hud {
+/* 4. 右側森林深入度指針卡片 */
+.forest-compass-card {
   position: absolute;
   top: 75px;
-  right: 18px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 170px;
+  right: 20px;
+  background: var(--panel-wood);
+  border: 1.5px solid var(--forest-emerald);
+  padding: 8px 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  min-width: 160px;
   pointer-events: auto;
 }
 
-.danger-title {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
+.compass-label { font-size: 0.78rem; color: var(--text-parchment); margin-bottom: 4px; }
 
-.danger-meter-bg {
-  height: 8px;
+.compass-track {
+  height: 7px;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 4px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
 }
 
-.danger-meter-fill {
+.compass-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+  background: linear-gradient(90deg, var(--forest-emerald), var(--amber-gold), #eb4d4b);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
-.danger-label-row {
+.compass-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
 }
 
-.badge-safe { color: var(--green); font-weight: 700; }
-.badge-warning { color: #f39c12; font-weight: 700; }
-.badge-danger { color: var(--red); font-weight: 700; animation: blink 0.8s infinite; }
+.state-safe { color: var(--forest-emerald); font-weight: 700; }
+.state-warn { color: var(--amber-gold); font-weight: 700; }
+.state-danger { color: #ff7979; font-weight: 700; animation: blink 0.8s infinite; }
 
 @keyframes blink { 50% { opacity: 0.4; } }
 
-/* 近身互動提示標籤（浮於物體上方） */
-.proximity-prompt {
+/* 5. 近身浮動互動引導 */
+.proximity-bubble {
   position: absolute;
   pointer-events: none;
   z-index: 15;
@@ -297,136 +291,107 @@ html, body {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.proximity-prompt.hidden {
-  opacity: 0;
-  visibility: hidden;
-}
+.proximity-bubble.hidden { opacity: 0; visibility: hidden; }
 
-.prompt-pill {
-  background: rgba(10, 12, 22, 0.92);
-  border: 1.5px solid var(--gold);
+.bubble-inner {
+  background: rgba(22, 17, 32, 0.95);
+  border: 2px solid var(--amber-gold);
   border-radius: 20px;
   padding: 6px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 0 16px var(--gold-glow);
-  animation: promptBob 1.2s infinite ease-in-out;
+  box-shadow: 0 0 20px var(--amber-glow);
+  animation: floatBob 1.3s infinite ease-in-out;
 }
 
-@keyframes promptBob {
+@keyframes floatBob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-6px); }
 }
 
-.prompt-key {
-  background: var(--gold);
-  color: #111;
+.key-pill {
+  background: var(--amber-gold);
+  color: #1a1205;
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   padding: 2px 8px;
   border-radius: 6px;
 }
 
-.prompt-text {
+.bubble-text {
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
 }
 
-/* 底部操作快捷列（參照截圖） */
-.hud-footer {
-  display: flex;
-  justify-content: center;
-  pointer-events: auto;
-  margin-bottom: 4px;
+/* 6. 極簡懸浮操作提示（非熱蘭遮樣式） */
+.floating-tips {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(246, 194, 62, 0.7);
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
 
-.control-hints {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 24px;
-  border-radius: 24px;
-  font-size: 0.85rem;
-}
-
-.hint-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #dcdde1;
-}
-
-.key-cap {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-weight: 700;
-  color: var(--gold);
-  font-size: 0.8rem;
-}
-
-.hint-sep {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-/* ================== 左下角虛擬搖桿 (Joystick) ================== */
-.joystick-container {
+/* ================== 原創星光水晶搖桿 ================== */
+.crystal-joystick-wrap {
   position: absolute;
   bottom: 24px;
   left: 24px;
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   pointer-events: auto;
   z-index: 20;
   touch-action: none;
 }
 
-.joystick-base {
+.crystal-joy-base {
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(16, 22, 40, 0.8) 0%, rgba(8, 10, 20, 0.9) 100%);
-  border: 2px solid rgba(0, 210, 211, 0.45);
+  background: radial-gradient(circle, rgba(40, 30, 60, 0.7) 0%, rgba(15, 12, 25, 0.9) 100%);
+  border: 2px solid var(--magic-violet);
   border-radius: 50%;
   position: relative;
-  box-shadow: 0 0 20px rgba(0, 210, 211, 0.25), inset 0 0 15px rgba(0, 210, 211, 0.15);
+  box-shadow: 0 0 20px var(--magic-glow), inset 0 0 15px rgba(165, 94, 234, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.joystick-stick {
-  width: 48px;
-  height: 48px;
-  background: radial-gradient(circle, #54a0ff 0%, #2e86de 100%);
+.crystal-joy-core {
+  width: 44px;
+  height: 44px;
+  background: radial-gradient(circle, #d980fa 0%, #8854d0 100%);
   border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 14px rgba(84, 160, 255, 0.8);
+  box-shadow: 0 0 16px rgba(217, 128, 250, 0.8);
   position: absolute;
   pointer-events: none;
   transform: translate(0px, 0px);
-  transition: box-shadow 0.15s ease;
 }
 
-.joystick-directions {
+.joy-compass-points {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: rgba(255, 255, 255, 0.4);
   font-weight: 700;
+  font-family: var(--font-serif);
 }
 
-.joy-dir { position: absolute; }
-.dir-up { top: 6px; left: 50%; transform: translateX(-50%); }
-.dir-down { bottom: 6px; left: 50%; transform: translateX(-50%); }
-.dir-left { left: 6px; top: 50%; transform: translateY(-50%); }
-.dir-right { right: 6px; top: 50%; transform: translateY(-50%); }
+.cp-n { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); }
+.cp-s { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); }
+.cp-w { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
+.cp-e { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
 
-/* ================== 右下角快捷觸控按鈕群 ================== */
-.touch-actions-group {
+/* ================== 原創琉璃符文動作按鈕 ================== */
+.crystal-actions-wrap {
   position: absolute;
   bottom: 24px;
   right: 24px;
@@ -437,7 +402,7 @@ html, body {
   z-index: 20;
 }
 
-.touch-circle-btn {
+.rune-circle-btn {
   border-radius: 50%;
   border: 2px solid var(--panel-border);
   color: #fff;
@@ -446,57 +411,109 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-  transition: all 0.12s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s ease;
   touch-action: manipulation;
 }
 
-.touch-circle-btn:active {
-  transform: scale(0.92);
+.rune-circle-btn:active { transform: scale(0.92); }
+
+.sprint-rune {
+  width: 58px;
+  height: 58px;
+  background: radial-gradient(circle, #2d3436 0%, #1e272e 100%);
+  border-color: var(--text-parchment);
 }
 
-.sprint-btn {
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle, #341f97 0%, #1e134b 100%);
-  border-color: var(--magic);
-}
-
-.sprint-btn:active,
-.sprint-btn.active {
-  box-shadow: 0 0 20px var(--magic-glow);
+.sprint-rune.active {
+  background: radial-gradient(circle, #20bf6b 0%, #0fb9b1 100%);
   border-color: #fff;
+  box-shadow: 0 0 20px var(--forest-glow);
 }
 
-.interact-btn {
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle, #10ac84 0%, #065241 100%);
-  border-color: #2ecc71;
-  box-shadow: 0 0 24px rgba(46, 204, 113, 0.4);
+.action-rune {
+  width: 78px;
+  height: 78px;
+  background: radial-gradient(circle, #f39c12 0%, #b71540 100%);
+  border-color: var(--amber-gold);
+  box-shadow: 0 0 26px var(--amber-glow);
 }
 
-.interact-btn:active {
-  box-shadow: 0 0 30px rgba(46, 204, 113, 0.8);
+.action-rune:active { box-shadow: 0 0 35px rgba(246, 194, 62, 0.9); }
+
+.rune-icon { font-size: 1.35rem; line-height: 1; }
+.rune-text { font-size: 0.65rem; font-weight: 700; margin-top: 3px; color: var(--text-parchment); }
+
+/* ================== 寶箱開箱獲得秘籍彈窗 ================== */
+.treasure-open-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(35, 24, 48, 0.96), rgba(18, 14, 28, 0.98));
+  border: 2px solid var(--amber-gold);
+  border-radius: 20px;
+  padding: 30px 24px;
+  text-align: center;
+  max-width: 440px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--amber-glow);
+  animation: treasurePop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
-.btn-icon {
-  font-size: 1.4rem;
-  line-height: 1;
+@keyframes treasurePop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.btn-sub {
-  font-size: 0.65rem;
+.treasure-chest-icon {
+  font-size: 3.5rem;
+  margin-bottom: 6px;
+  animation: chestBounce 0.8s ease;
+}
+
+@keyframes chestBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.treasure-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  background: rgba(246, 194, 62, 0.2);
+  border: 1px solid var(--amber-gold);
+  color: var(--amber-gold);
+  padding: 2px 10px;
+  border-radius: 10px;
   font-weight: 700;
-  margin-top: 2px;
-  opacity: 0.9;
+  margin-bottom: 8px;
 }
 
-/* ================== 彈出視窗（市集、調酒台、結算、圖鑑） ================== */
+.treasure-title {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.treasure-desc {
+  font-size: 0.88rem;
+  color: var(--text-parchment);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.treasure-reward-pill {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  color: var(--crystal-cyan);
+  font-weight: 700;
+}
+
+/* ================== 通用奇幻彈窗 ================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 12, 0.85);
+  background: rgba(6, 7, 14, 0.86);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
@@ -508,21 +525,24 @@ html, body {
   transition: opacity 0.25s ease;
 }
 
-.modal-backdrop.hidden {
-  opacity: 0;
-  pointer-events: none;
+.modal-backdrop.hidden { opacity: 0; pointer-events: none; }
+
+.fantasy-card-panel {
+  background: var(--panel-wood);
+  border: 2px solid var(--panel-border);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
 }
 
 .modal-dialog {
   width: 100%;
-  max-width: 780px;
+  max-width: 760px;
   max-height: 92vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: 22px;
-  border-radius: 18px;
-  position: relative;
 }
 
 .modal-header {
@@ -531,117 +551,91 @@ html, body {
   align-items: center;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .modal-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-title);
-  color: var(--gold);
+  gap: 8px;
+  font-family: var(--font-serif);
+  color: var(--amber-gold);
 }
 
-.close-btn {
+.parchment-close {
   background: transparent;
   border: none;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 1.8rem;
   cursor: pointer;
   line-height: 1;
 }
 
-.close-btn:hover { color: #fff; }
+.parchment-close:hover { color: #fff; }
 
 .modal-intro {
   font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 16px;
+  color: var(--text-parchment);
+  margin-bottom: 14px;
 }
 
-/* 市集彈窗列表 */
+/* 按鈕風格 */
+.fantasy-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.fantasy-btn.primary-glow {
+  background: linear-gradient(135deg, var(--amber-gold), #e67e22);
+  color: #1e1305;
+  box-shadow: 0 4px 16px var(--amber-glow);
+}
+
+.fantasy-btn.primary-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px var(--amber-glow);
+}
+
+.fantasy-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.fantasy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 市集網格 */
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
 }
 
 .market-card {
-  padding: 14px;
+  padding: 12px;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--panel-border-subtle);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  gap: 8px;
 }
 
-.market-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--gold);
-}
-
-.market-card-top {
-  display: flex;
-  gap: 10px;
-}
-
-.market-card-icon {
-  font-size: 2rem;
-  width: 46px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-}
-
-.market-card-info h4 {
-  font-size: 0.95rem;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.market-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.mtag {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  color: var(--text-dim);
-}
-
-.market-card-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 8px;
-}
-
-.buy-action-btn {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.buy-action-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.market-card-top { display: flex; gap: 8px; }
+.market-card-icon { font-size: 1.8rem; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 8px; }
+.market-card-info h4 { font-size: 0.95rem; color: #fff; margin-bottom: 2px; }
+.market-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.mtag { font-size: 0.68rem; padding: 2px 5px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; color: var(--text-parchment); }
+.market-card-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 6px; }
 
 /* 調酒台顧客點單橫幅 */
 .customer-order-banner {
@@ -649,362 +643,105 @@ html, body {
   display: flex;
   gap: 14px;
   align-items: center;
-  margin-bottom: 16px;
-  background: rgba(20, 24, 40, 0.85);
+  margin-bottom: 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cust-order-avatar {
   font-size: 2.8rem;
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  border: 1.5px solid var(--magic);
+  border: 1.5px solid var(--magic-violet);
 }
 
-.cust-order-info {
-  flex: 1;
-}
+.cust-order-info { flex: 1; }
+.cust-order-title { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.cust-order-tag { font-size: 0.72rem; background: var(--magic-violet); color: #fff; padding: 1px 6px; border-radius: 6px; }
+.cust-order-info p { font-size: 0.88rem; color: var(--text-parchment); line-height: 1.4; margin-bottom: 6px; }
+.order-desires { display: flex; gap: 6px; flex-wrap: wrap; }
 
-.cust-order-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.cust-order-tag {
-  font-size: 0.72rem;
-  background: var(--magic);
-  color: #fff;
-  padding: 1px 6px;
-  border-radius: 8px;
-}
-
-.cust-order-info p {
-  font-size: 0.88rem;
-  color: #e0e0e0;
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-
-.order-desires {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.desire-tag {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-
+.desire-tag { font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
 .tag-sweet { background: rgba(255, 107, 129, 0.25); color: #ff6b81; border: 1px solid #ff6b81; }
 .tag-sour { background: rgba(254, 202, 87, 0.25); color: #feca57; border: 1px solid #feca57; }
 .tag-spirit { background: rgba(84, 160, 255, 0.25); color: #54a0ff; border: 1px solid #54a0ff; }
 .tag-magic { background: rgba(165, 94, 234, 0.25); color: #a55eea; border: 1px solid #a55eea; }
 .tag-spicy { background: rgba(255, 71, 87, 0.25); color: #ff4757; border: 1px solid #ff4757; }
 
-/* 調酒台主體佈局 */
-.bartending-body {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
+/* 調酒台排版 */
+.bartending-body { display: flex; gap: 20px; flex-wrap: wrap; }
+.glass-visualization { flex: 0 0 210px; display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; }
+.glass-frame { position: relative; width: 200px; height: 300px; background: rgba(0, 0, 0, 0.4); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; }
+#cocktail-canvas { width: 200px; height: 300px; display: block; }
+.glass-capacity-indicator { position: absolute; bottom: 6px; background: rgba(0, 0, 0, 0.7); padding: 2px 8px; border-radius: 8px; font-size: 0.74rem; color: #fff; }
 
-.glass-visualization {
-  flex: 0 0 220px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin: 0 auto;
-}
-
-.glass-frame {
-  position: relative;
-  width: 200px;
-  height: 300px;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#cocktail-canvas {
-  width: 200px;
-  height: 300px;
-  display: block;
-}
-
-.glass-capacity-indicator {
-  position: absolute;
-  bottom: 6px;
-  background: rgba(0, 0, 0, 0.65);
-  padding: 3px 10px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.current-flavors-hud {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
-
-.flavor-bar-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.flavor-bar-item span { width: 38px; }
-
-.mini-bar {
-  flex: 1;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.mini-bar .fill {
-  height: 100%;
-  width: 0%;
-  transition: width 0.15s ease;
-}
-
+.current-flavors-hud { width: 100%; display: flex; flex-direction: column; gap: 4px; font-size: 0.76rem; color: var(--text-parchment); }
+.flavor-bar-item { display: flex; align-items: center; gap: 6px; }
+.flavor-bar-item span { width: 36px; }
+.mini-bar { flex: 1; height: 5px; background: rgba(0, 0, 0, 0.6); border-radius: 3px; overflow: hidden; }
+.mini-bar .fill { height: 100%; width: 0%; transition: width 0.15s ease; }
 #hud-sweet { background: #ff6b81; }
 #hud-sour { background: #feca57; }
 #hud-spirit { background: #54a0ff; }
 #hud-magic { background: #a55eea; }
 #hud-spicy { background: #ff4757; }
 
-.mix-controls {
-  flex: 1;
-  min-width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+.mix-controls { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 12px; }
+.ctrl-subhead { font-size: 0.85rem; color: var(--text-parchment); }
+.ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; }
+.ing-select-card { padding: 8px; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.ing-select-card.selected { border-color: var(--amber-gold); background: rgba(246, 194, 62, 0.18); box-shadow: 0 0 10px var(--amber-glow); }
 
-.ctrl-subhead {
-  font-size: 0.88rem;
-  color: var(--text-dim);
-}
-
-.ingredient-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.ing-select-card {
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--panel-border-subtle);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.ing-select-card.selected {
-  border-color: var(--gold);
-  background: rgba(249, 202, 36, 0.15);
-  box-shadow: 0 0 10px var(--gold-glow);
-}
-
-.pour-action-zone {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: center;
-}
-
-.pour-btn {
+.pour-action-zone { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+.pour-main-btn {
   background: linear-gradient(135deg, #0984e3, #00cec9);
-  border: none;
   color: #fff;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  touch-action: manipulation;
-  box-shadow: 0 4px 16px rgba(0, 206, 201, 0.4);
+  padding: 14px;
+  font-size: 1rem;
 }
-
-.pour-btn:active,
-.pour-btn.pouring {
-  transform: scale(0.97);
-  box-shadow: 0 0 24px rgba(0, 206, 201, 0.8);
-}
-
-.pour-btn:disabled {
-  background: #2d3436;
-  color: #636e72;
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.pour-tip {
-  font-size: 0.74rem;
-  color: var(--text-dim);
-}
-
-.mix-action-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: auto;
-}
-
-.action-btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  font-size: 0.9rem;
-  flex: 1;
-}
-
-.action-btn.glow-primary {
-  background: linear-gradient(135deg, var(--gold), #e67e22);
-  color: #111;
-  box-shadow: 0 4px 14px var(--gold-glow);
-}
-
-.action-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border: 1px solid var(--panel-border-subtle);
-}
+.pour-main-btn.pouring { transform: scale(0.97); box-shadow: 0 0 20px rgba(0, 206, 201, 0.8); }
+.pour-tip { font-size: 0.72rem; color: var(--text-muted); }
+.mix-action-buttons { display: flex; gap: 10px; margin-top: auto; }
 
 /* 結算面板 */
-.result-box {
-  max-width: 500px;
-  text-align: center;
-}
-
-.fanfare-icon { font-size: 2.6rem; display: block; margin-bottom: 6px; }
-
-#res-drink-name {
-  font-family: var(--font-title);
-  color: var(--gold);
-  font-size: 1.6rem;
-  margin-bottom: 4px;
-}
-
-.drink-tier-badge {
-  font-size: 0.8rem;
-  background: rgba(249, 202, 36, 0.2);
-  color: var(--gold);
-  border: 1px solid var(--gold);
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-weight: 700;
-}
-
-.rating-breakdown {
-  display: flex;
-  justify-content: space-around;
-  margin: 14px 0;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 8px;
-}
-
-.npc-comment-bubble {
-  padding: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  text-align: left;
-  margin-bottom: 14px;
-}
-
-.npc-avatar-small {
-  font-size: 2rem;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--magic);
-}
-
-.rewards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.reward-card {
-  padding: 10px 6px;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid var(--panel-border-subtle);
-}
-
-.rw-val { font-size: 1.1rem; font-weight: 800; color: #fff; }
-.reward-card.gold .rw-val { color: var(--gold); }
-.reward-card.rep .rw-val { color: var(--magic); }
-.reward-card.pts .rw-val { color: var(--cyan); }
-.rw-desc { font-size: 0.68rem; color: var(--text-dim); }
-
+.result-box { max-width: 480px; text-align: center; }
+.fanfare-icon { font-size: 2.5rem; display: block; margin-bottom: 4px; }
+#res-drink-name { font-family: var(--font-serif); color: var(--amber-gold); font-size: 1.6rem; margin-bottom: 4px; }
+.drink-tier-badge { font-size: 0.78rem; background: rgba(246, 194, 62, 0.2); color: var(--amber-gold); border: 1px solid var(--amber-gold); padding: 2px 8px; border-radius: 8px; font-weight: 700; }
+.rating-breakdown { display: flex; justify-content: space-around; margin: 12px 0; padding: 10px; background: rgba(0, 0, 0, 0.4); border-radius: 8px; }
+.r-label { font-size: 0.72rem; color: var(--text-muted); }
+.npc-comment-bubble { padding: 12px; display: flex; gap: 10px; align-items: center; text-align: left; margin-bottom: 12px; background: rgba(0, 0, 0, 0.35); border-radius: 8px; }
+.npc-avatar-small { font-size: 1.8rem; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border: 1px solid var(--magic-violet); }
+.npc-comment-text strong { display: block; font-size: 0.85rem; color: var(--amber-gold); margin-bottom: 2px; }
+.npc-comment-text p { font-size: 0.85rem; color: var(--text-parchment); line-height: 1.35; }
+.rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.reward-card { padding: 8px 4px; background: rgba(0, 0, 0, 0.45); border-radius: 8px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255, 255, 255, 0.08); }
+.reward-card.gold .rw-val { color: var(--amber-gold); }
+.reward-card.rep .rw-val { color: var(--magic-violet); }
+.reward-card.pts .rw-val { color: var(--crystal-cyan); }
 .full-width { width: 100%; }
 
-/* 圖鑑彈窗 */
-.book-box { max-width: 620px; }
-.recipe-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 12px;
-}
-
-.recipe-card {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--panel-border-subtle);
-  border-radius: 8px;
-}
-
+/* 圖鑑面板 */
+.book-box { max-width: 600px; }
+.recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.recipe-card { padding: 10px; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; }
 .recipe-card.locked { opacity: 0.45; filter: grayscale(0.8); }
 
-/* ================== RWD 螢幕適配微調 ================== */
+/* ================== 手機適配 ================== */
 @media (max-width: 768px) {
-  .control-hints { display: none; } /* 手機端隱藏底部鍵盤字體，保留搖桿與右下大按鈕 */
-  .hud-header { flex-wrap: wrap; gap: 8px; }
-  .economy-hud { padding: 4px 12px; gap: 8px; }
-  .stat-badge { font-size: 0.8rem; }
-  .joystick-container { bottom: 16px; left: 16px; width: 105px; height: 105px; }
-  .touch-actions-group { bottom: 16px; right: 16px; gap: 10px; }
-  .interact-btn { width: 70px; height: 70px; }
-  .sprint-btn { width: 52px; height: 52px; }
+  .floating-tips { display: none; }
+  .fantasy-header { flex-wrap: wrap; gap: 6px; }
+  .alchemy-resources { padding: 4px 10px; gap: 6px; }
+  .res-capsule { font-size: 0.78rem; }
+  .crystal-joystick-wrap { bottom: 16px; left: 16px; width: 95px; height: 95px; }
+  .crystal-actions-wrap { bottom: 16px; right: 16px; gap: 10px; }
+  .action-rune { width: 68px; height: 68px; }
+  .sprint-rune { width: 50px; height: 50px; }
   .bartending-body { flex-direction: column; }
 }
