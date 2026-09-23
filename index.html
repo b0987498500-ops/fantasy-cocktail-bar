@@ -9,10 +9,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Three.js 3D Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-  <!-- 主遊戲 2D 畫布 -->
+  <!-- 手機豎屏轉橫屏提示牆 -->
+  <div id="landscape-prompt" class="landscape-prompt-overlay">
+    <div class="landscape-prompt-card">
+      <div class="rotate-phone-icon">📱↻</div>
+      <h2>請將手機旋轉至「橫螢幕」遊玩</h2>
+      <p>《奇幻調酒館》具備沉浸式 3D 前進景深視野，橫螢幕掌機模式體驗更佳！</p>
+    </div>
+  </div>
+
+  <!-- 主遊戲 WebGL 3D 畫布 -->
   <canvas id="world-canvas"></canvas>
 
   <!-- 森林深處動態迷霧遮罩 -->
@@ -56,8 +67,9 @@
         </div>
       </div>
 
-      <!-- 右側：功能按鈕（氛圍音效與失落酒譜秘籍） -->
+      <!-- 右側：功能按鈕（視角切換、氛圍音效與失落酒譜秘籍） -->
       <div class="grimoire-actions">
+        <button id="camera-view-btn" class="parchment-btn" title="切換第一/第三人稱視角">🎥 視角: 第三人稱</button>
         <button id="audio-toggle-btn" class="parchment-btn" title="切換氛圍音效">🔊</button>
         <button id="recipe-book-btn" class="parchment-btn" title="失落酒譜秘籍">📜 酒譜秘籍</button>
       </div>

@@ -525,6 +525,61 @@ html, body {
   .bottom-hud-bar { display: none; }
 }
 
+/* 手機直屏轉橫屏提示 */
+.landscape-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 18, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .landscape-prompt-overlay {
+    display: flex;
+  }
+}
+
+.landscape-prompt-card {
+  background: rgba(44, 34, 28, 0.9);
+  border: 2px solid var(--amber-gold);
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 360px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px var(--amber-glow);
+}
+
+.rotate-phone-icon {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  display: inline-block;
+  animation: rotatePhoneAnim 2s infinite ease-in-out;
+}
+
+@keyframes rotatePhoneAnim {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+.landscape-prompt-card h2 {
+  font-family: var(--font-serif);
+  color: var(--amber-gold);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+
+.landscape-prompt-card p {
+  font-size: 0.88rem;
+  color: var(--text-parchment);
+  line-height: 1.5;
+}
+
 /* 底部操作提示條 */
 .bottom-hud-bar {
   position: absolute;
